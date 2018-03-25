@@ -102,6 +102,14 @@ impl<'a> Sub<f32> for &'a Vec3 {
     }
 }
 
+impl Sub<Vec3> for Vec3 {
+    type Output = Vec3;
+
+    fn sub(self, v: Vec3) -> Vec3 {
+        Vec3::new(self.e[0] - v.x(), self.e[1] - v.y(), self.e[2] - v.z())
+    }
+}
+
 impl<'a, 'b> Sub<&'b Vec3> for &'a Vec3 {
     type Output = Vec3;
 

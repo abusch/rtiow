@@ -22,18 +22,28 @@ use sphere::Sphere;
 use vec::{unit_vector, Vec3};
 
 fn color(r: &Ray, world: &Hitable) -> Vec3 {
-    let mut hit_record = HitRecord::default();
-    if world.hit(r, 0.0, f32::INFINITY, &mut hit_record) {
-        0.5 * Vec3::new(
-            hit_record.normal.x() + 1.,
-            hit_record.normal.y() + 1.,
-            hit_record.normal.z() + 1.,
-        )
+    let mut rec = HitRecord::default();
+    if world.hit(r, 0.0, f32::INFINITY, &mut rec) {
+        let target = &rec.p + &rec.normal + random_in_unit_sphere();
+        0.5 * color(&Ray::new(&rec.p, &(&target - &rec.p)), world)
     } else {
         let unit_direction = unit_vector(r.direction());
         let t = 0.5 * (unit_direction.y() + 1.0);
         (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
     }
+}
+
+fn random_in_unit_sphere() -> Vec3 {
+    let mut rng = rand::thread_rng();
+    let mut p;
+    loop {
+        p = 2. * Vec3::new(rng.next_f32(), rng.next_f32(), rng.next_f32()) - Vec3::new(1., 1., 1.);
+        if p.squared_length() < 1. {
+            break;
+        }
+    }
+
+    p
 }
 
 fn main() {
