@@ -1,4 +1,5 @@
 #![deny(missing_docs)]
+#![allow(non_snake_case)]
 //! This is my implementation of the raytracer described in "Ray Tracing In One Weekend" by Peter
 //! Shirley.
 
@@ -9,22 +10,29 @@ use ray::Ray;
 use vec::{unit_vector, Vec3};
 
 fn color(r: &Ray) -> Vec3 {
-    if hit_sphere(&Vec3::new(0., 0., -1.), 0.5, r) {
-        return Vec3::new(1., 0., 0.);
+    let center = Vec3::new(0., 0., -1.);
+    let t = hit_sphere(&center, 0.5, r);
+    if t > 0. {
+        let N = unit_vector(&(&r.point_at_parameter(t) - &center));
+        return 0.5 * Vec3::new(N.x() + 1., N.y() + 1., N.z() + 1.);
     }
     let unit_direction = unit_vector(r.direction());
     let t = 0.5 * (unit_direction.y() + 1.0);
     (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
 }
 
-fn hit_sphere(center: &Vec3, radius: f32, r: &Ray) -> bool {
+fn hit_sphere(center: &Vec3, radius: f32, r: &Ray) -> f32 {
     let oc = r.origin() - center;
     let a = Vec3::dot(r.direction(), r.direction());
     let b = 2.0 * Vec3::dot(&oc, r.direction());
     let c = Vec3::dot(&oc, &oc) - radius * radius;
 
     let discriminant = b * b - 4. * a * c;
-    discriminant > 0.
+    if discriminant < 0. {
+        -1.0
+    } else {
+        (-b - f32::sqrt(discriminant)) / (2. * a)
+    }
 }
 
 fn main() {
