@@ -1,3 +1,10 @@
+#![deny(missing_docs)]
+//! This is my implementation of the raytracer described in "Ray Tracing In One Weekend" by Peter
+//! Shirley.
+mod vec;
+
+use vec::Vec3;
+
 fn main() {
     let nx = 200;
     let ny = 100;
@@ -5,12 +12,11 @@ fn main() {
     println!("P3\n{} {}\n255", nx, ny);
     for j in (0..ny).rev() {
         for i in 0..nx {
-            let r = i as f32 / nx as f32;
-            let g = j as f32 / ny as f32;
-            let b = 0.2;
-            let ir = (255.99 * r) as u32;
-            let ig = (255.99 * g) as u32;
-            let ib = (255.99 * b) as u32;
+            let mut col = Vec3::new(i as f32 / nx as f32, j as f32 / ny as f32, 0.2);
+            col *= 255.99;
+            let ir = col[0] as u32;
+            let ig = col[1] as u32;
+            let ib = col[2] as u32;
             println!("{} {} {}", ir, ig, ib);
         }
     }
