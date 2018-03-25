@@ -3,6 +3,8 @@
 //! This is my implementation of the raytracer described in "Ray Tracing In One Weekend" by Peter
 //! Shirley.
 
+extern crate rand;
+
 mod camera;
 mod hitable;
 mod ray;
@@ -10,6 +12,8 @@ mod sphere;
 mod vec;
 
 use std::f32;
+
+use rand::Rng;
 
 use camera::Camera;
 use hitable::{HitRecord, Hitable};
@@ -33,11 +37,16 @@ fn color(r: &Ray, world: &Hitable) -> Vec3 {
 }
 
 fn main() {
+    // width
     let nx = 200;
+    // height
     let ny = 100;
+    // number of samples
+    let ns = 100;
 
     println!("P3\n{} {}\n255", nx, ny);
 
+    let mut rng = rand::thread_rng();
     let camera = Camera::new();
     let mut world = Vec::new();
     world.push(Box::new(Sphere::new(Vec3::new(0., 0., -1.), 0.5)) as Box<Hitable>);
@@ -45,10 +54,14 @@ fn main() {
     let foo: &[Box<Hitable>] = &world[..];
     for j in (0..ny).rev() {
         for i in 0..nx {
-            let u = i as f32 / nx as f32;
-            let v = j as f32 / ny as f32;
-            let ray = camera.get_ray(u, v);
-            let mut col = color(&ray, &foo);
+            let mut col = Vec3::default();
+            for _s in 0..ns {
+                let u = (i as f32 + rng.next_f32()) / nx as f32;
+                let v = (j as f32 + rng.next_f32()) / ny as f32;
+                let ray = camera.get_ray(u, v);
+                col += color(&ray, &foo);
+            }
+            col /= ns as f32;
             col *= 255.99;
             let ir = col[0] as u32;
             let ig = col[1] as u32;

@@ -138,6 +138,14 @@ impl<'a> Div<f32> for &'a Vec3 {
     }
 }
 
+impl AddAssign<Vec3> for Vec3 {
+    fn add_assign(&mut self, v: Vec3) {
+        self.e[0] += v.x();
+        self.e[1] += v.y();
+        self.e[2] += v.z();
+    }
+}
+
 impl AddAssign<f32> for Vec3 {
     fn add_assign(&mut self, v: f32) {
         self.e[0] += v;
