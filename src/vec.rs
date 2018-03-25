@@ -118,6 +118,16 @@ impl<'a> Mul<f32> for &'a Vec3 {
     }
 }
 
+impl Div<f32> for Vec3 {
+    type Output = Vec3;
+
+    fn div(self, v: f32) -> Vec3 {
+        debug_assert!(v != 0.0);
+        let k = 1.0 / v;
+        Vec3::new(self.e[0] * k, self.e[1] * k, self.e[2] * k)
+    }
+}
+
 impl<'a> Div<f32> for &'a Vec3 {
     type Output = Vec3;
 

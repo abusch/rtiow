@@ -3,35 +3,30 @@
 //! This is my implementation of the raytracer described in "Ray Tracing In One Weekend" by Peter
 //! Shirley.
 
+mod hitable;
 mod ray;
+mod sphere;
 mod vec;
 
+use std::f32;
+
+use hitable::{HitRecord, Hitable};
 use ray::Ray;
+use sphere::Sphere;
 use vec::{unit_vector, Vec3};
 
-fn color(r: &Ray) -> Vec3 {
-    let center = Vec3::new(0., 0., -1.);
-    let t = hit_sphere(&center, 0.5, r);
-    if t > 0. {
-        let N = unit_vector(&(&r.point_at_parameter(t) - &center));
-        return 0.5 * Vec3::new(N.x() + 1., N.y() + 1., N.z() + 1.);
-    }
-    let unit_direction = unit_vector(r.direction());
-    let t = 0.5 * (unit_direction.y() + 1.0);
-    (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
-}
-
-fn hit_sphere(center: &Vec3, radius: f32, r: &Ray) -> f32 {
-    let oc = r.origin() - center;
-    let a = Vec3::dot(r.direction(), r.direction());
-    let b = 2.0 * Vec3::dot(&oc, r.direction());
-    let c = Vec3::dot(&oc, &oc) - radius * radius;
-
-    let discriminant = b * b - 4. * a * c;
-    if discriminant < 0. {
-        -1.0
+fn color(r: &Ray, world: &Hitable) -> Vec3 {
+    let mut hit_record = HitRecord::default();
+    if world.hit(r, 0.0, f32::INFINITY, &mut hit_record) {
+        0.5 * Vec3::new(
+            hit_record.normal.x() + 1.,
+            hit_record.normal.y() + 1.,
+            hit_record.normal.z() + 1.,
+        )
     } else {
-        (-b - f32::sqrt(discriminant)) / (2. * a)
+        let unit_direction = unit_vector(r.direction());
+        let t = 0.5 * (unit_direction.y() + 1.0);
+        (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
     }
 }
 
@@ -44,6 +39,11 @@ fn main() {
     let horizontal = Vec3::new(4., 0., 0.);
     let vertical = Vec3::new(0., 2., 0.);
     let origin = Vec3::default();
+
+    let mut world = Vec::new();
+    world.push(Box::new(Sphere::new(Vec3::new(0., 0., -1.), 0.5)) as Box<Hitable>);
+    world.push(Box::new(Sphere::new(Vec3::new(0., -100.5, -1.), 100.)) as Box<Hitable>);
+    let foo: &[Box<Hitable>] = &world[..];
     for j in (0..ny).rev() {
         for i in 0..nx {
             let u = i as f32 / nx as f32;
@@ -52,7 +52,7 @@ fn main() {
                 &origin,
                 &(&lower_left_corner + u * &horizontal + v * &vertical),
             );
-            let mut col = color(&ray);
+            let mut col = color(&ray, &foo);
             col *= 255.99;
             let ir = col[0] as u32;
             let ig = col[1] as u32;
