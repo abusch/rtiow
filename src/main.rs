@@ -72,6 +72,7 @@ fn main() {
                 col += color(&ray, &foo);
             }
             col /= ns as f32;
+            col = Vec3::new(f32::sqrt(col.r()), f32::sqrt(col.g()), f32::sqrt(col.b()));
             col *= 255.99;
             let ir = col[0] as u32;
             let ig = col[1] as u32;
