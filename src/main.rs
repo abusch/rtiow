@@ -1,6 +1,8 @@
 #![deny(missing_docs)]
 //! This is my implementation of the raytracer described in "Ray Tracing In One Weekend" by Peter
 //! Shirley.
+
+mod ray;
 mod vec;
 
 use vec::Vec3;

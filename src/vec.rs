@@ -144,3 +144,43 @@ impl DivAssign<f32> for Vec3 {
         self.e[2] *= k;
     }
 }
+
+impl Add<Vec3> for Vec3 {
+    type Output = Vec3;
+
+    fn add(self, v: Vec3) -> Vec3 {
+        Vec3::new(self.e[0] + v.e[0], self.e[1] + v.e[1], self.e[2] + v.e[2])
+    }
+}
+
+impl<'a> Add<Vec3> for &'a Vec3 {
+    type Output = Vec3;
+
+    fn add(self, v: Vec3) -> Vec3 {
+        Vec3::new(self.e[0] + v.e[0], self.e[1] + v.e[1], self.e[2] + v.e[2])
+    }
+}
+
+impl<'a, 'b> Add<&'a Vec3> for &'b Vec3 {
+    type Output = Vec3;
+
+    fn add(self, v: &'a Vec3) -> Vec3 {
+        Vec3::new(self.e[0] + v.e[0], self.e[1] + v.e[1], self.e[2] + v.e[2])
+    }
+}
+
+impl<'a> Mul<&'a Vec3> for f32 {
+    type Output = Vec3;
+
+    fn mul(self, v: &'a Vec3) -> Vec3 {
+        Vec3::new(v.e[0] * self, v.e[1] * self, v.e[2] * self)
+    }
+}
+
+impl Mul<Vec3> for f32 {
+    type Output = Vec3;
+
+    fn mul(self, v: Vec3) -> Vec3 {
+        Vec3::new(v.e[0] * self, v.e[1] * self, v.e[2] * self)
+    }
+}
