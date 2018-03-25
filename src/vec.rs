@@ -59,6 +59,11 @@ impl Vec3 {
         self.e[1] *= k;
         self.e[2] *= k;
     }
+
+    #[inline]
+    pub fn dot(v1: &Vec3, v2: &Vec3) -> f32 {
+        v1.x() * v2.x() + v1.y() * v2.y() + v1.z() * v2.z()
+    }
 }
 
 pub fn unit_vector(v: &Vec3) -> Vec3 {
@@ -94,6 +99,14 @@ impl<'a> Sub<f32> for &'a Vec3 {
 
     fn sub(self, v: f32) -> Vec3 {
         Vec3::new(self.e[0] - v, self.e[1] - v, self.e[2] - v)
+    }
+}
+
+impl<'a, 'b> Sub<&'b Vec3> for &'a Vec3 {
+    type Output = Vec3;
+
+    fn sub(self, v: &'b Vec3) -> Vec3 {
+        Vec3::new(self.e[0] - v.x(), self.e[1] - v.y(), self.e[2] - v.z())
     }
 }
 
