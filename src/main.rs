@@ -3,6 +3,7 @@
 //! This is my implementation of the raytracer described in "Ray Tracing In One Weekend" by Peter
 //! Shirley.
 
+mod camera;
 mod hitable;
 mod ray;
 mod sphere;
@@ -10,6 +11,7 @@ mod vec;
 
 use std::f32;
 
+use camera::Camera;
 use hitable::{HitRecord, Hitable};
 use ray::Ray;
 use sphere::Sphere;
@@ -35,11 +37,8 @@ fn main() {
     let ny = 100;
 
     println!("P3\n{} {}\n255", nx, ny);
-    let lower_left_corner = Vec3::new(-2., -1., -1.);
-    let horizontal = Vec3::new(4., 0., 0.);
-    let vertical = Vec3::new(0., 2., 0.);
-    let origin = Vec3::default();
 
+    let camera = Camera::new();
     let mut world = Vec::new();
     world.push(Box::new(Sphere::new(Vec3::new(0., 0., -1.), 0.5)) as Box<Hitable>);
     world.push(Box::new(Sphere::new(Vec3::new(0., -100.5, -1.), 100.)) as Box<Hitable>);
@@ -48,10 +47,7 @@ fn main() {
         for i in 0..nx {
             let u = i as f32 / nx as f32;
             let v = j as f32 / ny as f32;
-            let ray = Ray::new(
-                &origin,
-                &(&lower_left_corner + u * &horizontal + v * &vertical),
-            );
+            let ray = camera.get_ray(u, v);
             let mut col = color(&ray, &foo);
             col *= 255.99;
             let ir = col[0] as u32;
