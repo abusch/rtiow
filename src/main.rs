@@ -23,7 +23,7 @@ use vec::{unit_vector, Vec3};
 
 fn color(r: &Ray, world: &Hitable) -> Vec3 {
     let mut rec = HitRecord::default();
-    if world.hit(r, 0.0, f32::INFINITY, &mut rec) {
+    if world.hit(r, 0.001, f32::INFINITY, &mut rec) {
         let target = &rec.p + &rec.normal + random_in_unit_sphere();
         0.5 * color(&Ray::new(&rec.p, &(&target - &rec.p)), world)
     } else {
