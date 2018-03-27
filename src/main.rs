@@ -30,17 +30,17 @@ fn color(r: &Ray, world: &Hitable, depth: u32) -> Vec3 {
         let mut scattered = Ray::default();
         let mut attenuation = Vec3::default();
         if depth < 50 && rec.mat.is_some()
-            && rec.mat.as_ref().cloned().unwrap().scatter(
-                r,
-                &mut rec,
-                &mut attenuation,
-                &mut scattered,
-            ) {
+            && rec.mat
+                .as_ref()
+                .cloned()
+                .unwrap()
+                .scatter(r, &rec, &mut attenuation, &mut scattered)
+        {
             // if we hit a surface with a material, recurse along the scattered ray
-            return attenuation * color(&scattered, world, depth + 1);
+            attenuation * color(&scattered, world, depth + 1)
         } else {
             // return black
-            return Vec3::new(0.0, 0.0, 0.0);
+            Vec3::new(0.0, 0.0, 0.0)
         }
     } else {
         let unit_direction = unit_vector(r.direction());
@@ -85,7 +85,7 @@ fn main() {
         100.,
         Arc::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.0))),
     )) as Box<Hitable>);
-    let foo: &[Box<Hitable>] = &world[..];
+    let world: &[Box<Hitable>] = &world[..];
     for j in (0..ny).rev() {
         for i in 0..nx {
             let mut col = Vec3::default();
@@ -93,7 +93,7 @@ fn main() {
                 let u = (i as f32 + rng.next_f32()) / nx as f32;
                 let v = (j as f32 + rng.next_f32()) / ny as f32;
                 let ray = camera.get_ray(u, v);
-                col += color(&ray, &foo, 0);
+                col += color(&ray, &world, 0);
             }
             col /= ns as f32;
             col = Vec3::new(f32::sqrt(col.r()), f32::sqrt(col.g()), f32::sqrt(col.b()));

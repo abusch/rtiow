@@ -134,6 +134,7 @@ impl<'a> Mul<f32> for &'a Vec3 {
     }
 }
 
+#[allow(suspicious_arithmetic_impl)]
 impl Div<f32> for Vec3 {
     type Output = Vec3;
 
@@ -144,6 +145,7 @@ impl Div<f32> for Vec3 {
     }
 }
 
+#[allow(suspicious_arithmetic_impl)]
 impl<'a> Div<f32> for &'a Vec3 {
     type Output = Vec3;
 
@@ -186,6 +188,7 @@ impl MulAssign<f32> for Vec3 {
     }
 }
 
+#[allow(suspicious_arithmetic_impl)]
 impl DivAssign<f32> for Vec3 {
     fn div_assign(&mut self, v: f32) {
         debug_assert!(v != 0.0);
