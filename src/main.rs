@@ -1,7 +1,7 @@
-#![deny(missing_docs)]
-#![allow(non_snake_case)]
 //! This is my implementation of the raytracer described in "Ray Tracing In One Weekend" by Peter
 //! Shirley.
+#![deny(missing_docs)]
+#![allow(non_snake_case)]
 
 extern crate rand;
 
@@ -19,7 +19,7 @@ use rand::Rng;
 
 use camera::Camera;
 use hitable::{HitRecord, Hitable};
-use material::Lambertian;
+use material::{Lambertian, Material, Metal};
 use ray::Ray;
 use sphere::Sphere;
 use vec::{unit_vector, Vec3};
@@ -78,12 +78,22 @@ fn main() {
     world.push(Box::new(Sphere::new(
         Vec3::new(0., 0., -1.),
         0.5,
-        Arc::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.3))),
+        Arc::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.3))) as Arc<Material>,
     )) as Box<Hitable>);
     world.push(Box::new(Sphere::new(
         Vec3::new(0., -100.5, -1.),
         100.,
-        Arc::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.0))),
+        Arc::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.0))) as Arc<Material>,
+    )) as Box<Hitable>);
+    world.push(Box::new(Sphere::new(
+        Vec3::new(1., 0., -1.),
+        0.5,
+        Arc::new(Metal::new(Vec3::new(0.8, 0.6, 0.3))) as Arc<Material>,
+    )) as Box<Hitable>);
+    world.push(Box::new(Sphere::new(
+        Vec3::new(-1., 0., -1.),
+        0.5,
+        Arc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8))) as Arc<Material>,
     )) as Box<Hitable>);
     let world: &[Box<Hitable>] = &world[..];
     for j in (0..ny).rev() {

@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use hitable::HitRecord;
 use random_in_unit_sphere;
 use ray::Ray;
-use vec::Vec3;
+use vec::{unit_vector, Vec3};
 
 pub trait Material: Debug {
     fn scatter(
@@ -15,6 +15,8 @@ pub trait Material: Debug {
     ) -> bool;
 }
 
+/// Lambertian (diffuse) material. It scatters light uniformly in every direction (independently of
+/// the viewing direction).
 #[derive(Debug, Clone, Default)]
 pub struct Lambertian {
     albedo: Vec3,
@@ -39,4 +41,39 @@ impl Material for Lambertian {
         attenuation.clone_from(&self.albedo);
         true
     }
+}
+
+/// Metal material
+#[derive(Debug, Clone)]
+pub struct Metal {
+    albedo: Vec3,
+}
+
+impl Metal {
+    pub fn new(albedo: Vec3) -> Metal {
+        Metal { albedo }
+    }
+}
+
+impl Material for Metal {
+    fn scatter(
+        &self,
+        r_in: &Ray,
+        rec: &HitRecord,
+        attenuation: &mut Vec3,
+        scattered: &mut Ray,
+    ) -> bool {
+        let reflected = reflect(&unit_vector(r_in.direction()), &rec.normal);
+        scattered.clone_from(&Ray::new(&rec.p, &reflected));
+        attenuation.clone_from(&self.albedo);
+
+        Vec3::dot(scattered.direction(), &rec.normal) > 0.0
+    }
+}
+
+// Utility functions
+
+/// Returns the reflected vector of the given vector `v` wrt. the given normal `n`
+fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
+    v - &(2. * Vec3::dot(v, n) * n)
 }
