@@ -88,12 +88,12 @@ fn main() {
     world.push(Box::new(Sphere::new(
         Vec3::new(1., 0., -1.),
         0.5,
-        Arc::new(Metal::new(Vec3::new(0.8, 0.6, 0.3))) as Arc<Material>,
+        Arc::new(Metal::new(Vec3::new(0.8, 0.6, 0.3), 1.)) as Arc<Material>,
     )) as Box<Hitable>);
     world.push(Box::new(Sphere::new(
         Vec3::new(-1., 0., -1.),
         0.5,
-        Arc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8))) as Arc<Material>,
+        Arc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8), 0.3)) as Arc<Material>,
     )) as Box<Hitable>);
     let world: &[Box<Hitable>] = &world[..];
     for j in (0..ny).rev() {
