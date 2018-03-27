@@ -1,3 +1,6 @@
+use std::sync::Arc;
+
+use material::Material;
 use ray::Ray;
 use vec::Vec3;
 
@@ -6,6 +9,7 @@ pub struct HitRecord {
     pub t: f32,
     pub p: Vec3,
     pub normal: Vec3,
+    pub mat: Option<Arc<Material>>,
 }
 
 pub trait Hitable {
@@ -21,9 +25,7 @@ impl<'a> Hitable for &'a [Box<Hitable>] {
             if hitable.hit(r, t_min, closest_so_far, &mut temp_hit) {
                 hit_anything = true;
                 closest_so_far = temp_hit.t;
-                rec.t = temp_hit.t;
-                rec.p = temp_hit.p.clone();
-                rec.normal = temp_hit.normal.clone();
+                rec.clone_from(&temp_hit);
             }
         }
         hit_anything
