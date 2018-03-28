@@ -78,11 +78,19 @@ impl Index<usize> for Vec3 {
     }
 }
 
+impl<'a> Neg for &'a Vec3 {
+    type Output = Vec3;
+
+    fn neg(self) -> Vec3 {
+        Vec3::new(-self.e[0], -self.e[1], -self.e[2])
+    }
+}
+
 impl Neg for Vec3 {
     type Output = Vec3;
 
     fn neg(self) -> Vec3 {
-        Vec3::new(-self.e[0], self.e[1], self.e[2])
+        Vec3::new(-self.e[0], -self.e[1], -self.e[2])
     }
 }
 
