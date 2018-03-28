@@ -64,9 +64,9 @@ fn random_in_unit_sphere() -> Vec3 {
 
 fn main() {
     // width
-    let nx = 200;
+    let nx = 400;
     // height
-    let ny = 100;
+    let ny = 200;
     // number of samples
     let ns = 100;
 
@@ -78,7 +78,7 @@ fn main() {
     world.push(Box::new(Sphere::new(
         Vec3::new(0., 0., -1.),
         0.5,
-        Arc::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.3))) as Arc<Material>,
+        Arc::new(Lambertian::new(Vec3::new(0.1, 0.2, 0.5))) as Arc<Material>,
     )) as Box<Hitable>);
     world.push(Box::new(Sphere::new(
         Vec3::new(0., -100.5, -1.),

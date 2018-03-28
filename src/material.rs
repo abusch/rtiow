@@ -1,5 +1,7 @@
 use std::fmt::Debug;
 
+use rand::{self, Rng};
+
 use hitable::HitRecord;
 use random_in_unit_sphere;
 use ray::Ray;
@@ -97,28 +99,39 @@ impl Material for Dielectric {
     ) -> bool {
         let outward_normal;
         let ni_over_nt;
+        let cosine;
         *attenuation = Vec3::new(1.0, 1.0, 1.0);
-        if Vec3::dot(r_in.direction(), &rec.normal) > 0.0 {
+        let dir_dot_n = Vec3::dot(r_in.direction(), &rec.normal);
+        if dir_dot_n > 0.0 {
             outward_normal = -&rec.normal;
             ni_over_nt = self.ref_idx;
+            cosine = self.ref_idx * dir_dot_n / r_in.direction().length();
         } else {
             outward_normal = rec.normal.clone();
             ni_over_nt = 1.0 / self.ref_idx;
+            cosine = -dir_dot_n / r_in.direction().length();
         }
+
         let reflected = reflect(r_in.direction(), &rec.normal);
         let mut refracted = Vec3::default();
-        if refract(
+        let reflect_prob = if refract(
             r_in.direction(),
             &outward_normal,
             ni_over_nt,
             &mut refracted,
         ) {
-            *scattered = Ray::new(&rec.p, &refracted);
-            true
+            schlick(cosine, self.ref_idx)
         } else {
+            1.0
+        };
+
+        if rand::thread_rng().next_f32() < reflect_prob {
             *scattered = Ray::new(&rec.p, &reflected);
-            false
+        } else {
+            *scattered = Ray::new(&rec.p, &refracted);
         }
+
+        true
     }
 }
 
@@ -140,4 +153,11 @@ fn refract(v: &Vec3, n: &Vec3, ni_over_nt: f32, refracted: &mut Vec3) -> bool {
     } else {
         false
     }
+}
+
+fn schlick(cosine: f32, ref_idx: f32) -> f32 {
+    let r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+    let r0 = r0 * r0;
+
+    r0 + (1.0 - r0) * f32::powf(1.0 - cosine, 5.0)
 }
