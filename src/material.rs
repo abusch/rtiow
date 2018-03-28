@@ -5,7 +5,7 @@ use rand::{self, Rng};
 use hitable::HitRecord;
 use random_in_unit_sphere;
 use ray::Ray;
-use vec::{unit_vector, Vec3};
+use vec::{dot, unit_vector, Vec3};
 
 pub trait Material: Debug {
     fn scatter(
@@ -74,7 +74,7 @@ impl Material for Metal {
         );
         *attenuation = self.albedo.clone();
 
-        Vec3::dot(scattered.direction(), &rec.normal) > 0.0
+        dot(scattered.direction(), &rec.normal) > 0.0
     }
 }
 
@@ -101,7 +101,7 @@ impl Material for Dielectric {
         let ni_over_nt;
         let cosine;
         *attenuation = Vec3::new(1.0, 1.0, 1.0);
-        let dir_dot_n = Vec3::dot(r_in.direction(), &rec.normal);
+        let dir_dot_n = dot(r_in.direction(), &rec.normal);
         if dir_dot_n > 0.0 {
             outward_normal = -&rec.normal;
             ni_over_nt = self.ref_idx;
@@ -139,12 +139,12 @@ impl Material for Dielectric {
 
 /// Returns the reflected vector of the given vector `v` wrt. the given normal `n`
 fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
-    v - &(2. * Vec3::dot(v, n) * n)
+    v - &(2. * dot(v, n) * n)
 }
 
 fn refract(v: &Vec3, n: &Vec3, ni_over_nt: f32, refracted: &mut Vec3) -> bool {
     let uv = unit_vector(v);
-    let dt = Vec3::dot(&uv, n);
+    let dt = dot(&uv, n);
     let discriminant = 1.0 - ni_over_nt * ni_over_nt * (1.0 - dt * dt);
 
     if discriminant > 0.0 {

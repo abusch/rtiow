@@ -3,7 +3,7 @@ use std::sync::Arc;
 use hitable::{HitRecord, Hitable};
 use material::Material;
 use ray::Ray;
-use vec::Vec3;
+use vec::{dot, Vec3};
 
 pub struct Sphere {
     center: Vec3,
@@ -24,9 +24,9 @@ impl Sphere {
 impl Hitable for Sphere {
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
         let oc = r.origin() - &self.center;
-        let a = Vec3::dot(r.direction(), r.direction());
-        let b = Vec3::dot(&oc, r.direction());
-        let c = Vec3::dot(&oc, &oc) - self.radius * self.radius;
+        let a = dot(r.direction(), r.direction());
+        let b = dot(&oc, r.direction());
+        let c = dot(&oc, &oc) - self.radius * self.radius;
         let discriminant = b * b - a * c;
 
         if discriminant > 0. {

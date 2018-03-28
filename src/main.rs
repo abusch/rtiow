@@ -73,7 +73,13 @@ fn main() {
     println!("P3\n{} {}\n255", nx, ny);
 
     let mut rng = rand::thread_rng();
-    let camera = Camera::new();
+    let camera = Camera::new(
+        Vec3::new(-2.0, 2.0, 1.0),
+        Vec3::new(0.0, 0.0, -1.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        90.0,
+        nx as f32 / ny as f32,
+    );
     let mut world = Vec::new();
     world.push(Box::new(Sphere::new(
         Vec3::new(0., 0., -1.),

@@ -2,7 +2,7 @@
 //! direction, colour, etc...
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, Mul, MulAssign, Neg, Sub, SubAssign};
 
-#[derive(Debug, PartialEq, PartialOrd, Default, Clone)]
+#[derive(Debug, PartialEq, PartialOrd, Default, Clone, Copy)]
 pub struct Vec3 {
     e: [f32; 3],
 }
@@ -59,11 +59,20 @@ impl Vec3 {
         self.e[1] *= k;
         self.e[2] *= k;
     }
+}
 
-    #[inline]
-    pub fn dot(v1: &Vec3, v2: &Vec3) -> f32 {
-        v1.x() * v2.x() + v1.y() * v2.y() + v1.z() * v2.z()
-    }
+#[inline]
+pub fn dot(v1: &Vec3, v2: &Vec3) -> f32 {
+    v1.x() * v2.x() + v1.y() * v2.y() + v1.z() * v2.z()
+}
+
+#[inline]
+pub fn cross(v1: &Vec3, v2: &Vec3) -> Vec3 {
+    Vec3::new(
+        v1.y() * v2.z() - v1.z() * v2.y(),
+        -(v1.x() * v2.z() - v1.z() * v2.x()),
+        v1.x() * v2.y() - v1.y() * v2.x(),
+    )
 }
 
 pub fn unit_vector(v: &Vec3) -> Vec3 {
