@@ -21,7 +21,7 @@ use camera::Camera;
 use hitable::{HitRecord, Hitable};
 use material::{Dielectric, Lambertian, Material, Metal};
 use ray::Ray;
-use sphere::Sphere;
+use sphere::{MovingSphere, Sphere};
 use vec::{unit_vector, Vec3};
 
 fn color(r: &Ray, world: &Hitable, depth: u32) -> Vec3 {
@@ -81,28 +81,41 @@ fn random_scene() -> Vec<Box<Hitable>> {
                 b as f32 + 0.9 * rng.next_f32(),
             );
             if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
-                let mat: Arc<Material> = if choose_mat < 0.8 {
+                if choose_mat < 0.8 {
                     // diffuse
-                    Arc::new(Lambertian::new(Vec3::new(
-                        rng.next_f32() * rng.next_f32(),
-                        rng.next_f32() * rng.next_f32(),
-                        rng.next_f32() * rng.next_f32(),
-                    )))
+                    list.push(Box::new(MovingSphere::new(
+                        center,
+                        center + Vec3::new(0.0, 0.5 * rng.next_f32(), 0.0),
+                        0.0,
+                        1.0,
+                        0.2,
+                        Arc::new(Lambertian::new(Vec3::new(
+                            rng.next_f32() * rng.next_f32(),
+                            rng.next_f32() * rng.next_f32(),
+                            rng.next_f32() * rng.next_f32(),
+                        ))),
+                    )) as Box<Hitable>)
                 } else if choose_mat < 0.95 {
                     // metal
-                    Arc::new(Metal::new(
-                        Vec3::new(
-                            0.5 * (1.0 + rng.next_f32()),
-                            0.5 * (1.0 + rng.next_f32()),
-                            0.5 * (1.0 + rng.next_f32()),
-                        ),
-                        0.5 * rng.next_f32(),
-                    ))
+                    list.push(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Arc::new(Metal::new(
+                            Vec3::new(
+                                0.5 * (1.0 + rng.next_f32()),
+                                0.5 * (1.0 + rng.next_f32()),
+                                0.5 * (1.0 + rng.next_f32()),
+                            ),
+                            0.5 * rng.next_f32(),
+                        )),
+                    )) as Box<Hitable>);
                 } else {
                     // dielectric
-                    Arc::new(Dielectric::new(1.5))
-                };
-                list.push(Box::new(Sphere::new(center, 0.2, mat)) as Box<Hitable>);
+                    list.push(
+                        Box::new(Sphere::new(center, 0.2, Arc::new(Dielectric::new(1.5))))
+                            as Box<Hitable>,
+                    );
+                }
             }
         }
     }
@@ -128,9 +141,9 @@ fn random_scene() -> Vec<Box<Hitable>> {
 
 fn main() {
     // width
-    let nx = 1200;
+    let nx = 400;
     // height
-    let ny = 800;
+    let ny = 200;
     // number of samples
     let ns = 100;
 
@@ -147,6 +160,8 @@ fn main() {
         20.0,
         nx as f32 / ny as f32,
         0.1,
+        0.0,
+        1.0,
         dist_focus,
     );
     // let mut world = Vec::new();
