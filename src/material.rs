@@ -38,8 +38,8 @@ impl Material for Lambertian {
         attenuation: &mut Vec3,
         scattered: &mut Ray,
     ) -> bool {
-        let target = &rec.p + &rec.normal + random_in_unit_sphere();
-        scattered.clone_from(&Ray::new(&rec.p, &(&target - &rec.p)));
+        let target = rec.p + rec.normal + random_in_unit_sphere();
+        scattered.clone_from(&Ray::new(&rec.p, &(target - rec.p)));
         attenuation.clone_from(&self.albedo);
         true
     }
@@ -68,11 +68,8 @@ impl Material for Metal {
         scattered: &mut Ray,
     ) -> bool {
         let reflected = reflect(&unit_vector(r_in.direction()), &rec.normal);
-        *scattered = Ray::new(
-            &rec.p,
-            &(&reflected + &(self.fuzz * random_in_unit_sphere())),
-        );
-        *attenuation = self.albedo.clone();
+        *scattered = Ray::new(&rec.p, &(reflected + self.fuzz * random_in_unit_sphere()));
+        *attenuation = self.albedo;
 
         dot(scattered.direction(), &rec.normal) > 0.0
     }
@@ -107,7 +104,7 @@ impl Material for Dielectric {
             ni_over_nt = self.ref_idx;
             cosine = self.ref_idx * dir_dot_n / r_in.direction().length();
         } else {
-            outward_normal = rec.normal.clone();
+            outward_normal = rec.normal;
             ni_over_nt = 1.0 / self.ref_idx;
             cosine = -dir_dot_n / r_in.direction().length();
         }

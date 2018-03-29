@@ -34,7 +34,7 @@ impl Hitable for Sphere {
             if temp > t_min && temp < t_max {
                 rec.t = temp;
                 rec.p = r.point_at_parameter(rec.t);
-                rec.normal = (&rec.p - &self.center) / self.radius;
+                rec.normal = (rec.p - self.center) / self.radius;
                 rec.mat = Some(Arc::clone(&self.material));
                 return true;
             }
@@ -42,7 +42,7 @@ impl Hitable for Sphere {
             if temp > t_min && temp < t_max {
                 rec.t = temp;
                 rec.p = r.point_at_parameter(rec.t);
-                rec.normal = (&rec.p - &self.center) / self.radius;
+                rec.normal = (rec.p - self.center) / self.radius;
                 rec.mat = Some(Arc::clone(&self.material));
                 return true;
             }

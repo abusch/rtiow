@@ -12,7 +12,6 @@ pub struct Camera {
     vertical: Vec3,
     u: Vec3,
     v: Vec3,
-    w: Vec3,
     lens_radius: f32,
 }
 
@@ -47,7 +46,6 @@ impl Camera {
             vertical,
             u,
             v,
-            w,
             lens_radius,
         }
     }
@@ -57,7 +55,7 @@ impl Camera {
         let offset = &self.u * rd.x() + &self.v * rd.y();
         Ray::new(
             &(self.origin + offset),
-            &(&self.lower_left_corner + s * &self.horizontal + t * &self.vertical - self.origin
+            &(self.lower_left_corner + s * self.horizontal + t * self.vertical - self.origin
                 - offset),
         )
     }
