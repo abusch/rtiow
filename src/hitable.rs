@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use aabb::{surrounding_box, Aabb};
 use material::Material;
 use ray::Ray;
 use vec::Vec3;
@@ -14,6 +15,7 @@ pub struct HitRecord {
 
 pub trait Hitable {
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool;
+    fn bounding_box(&self, t0: f32, t1: f32, aabb: &mut Aabb) -> bool;
 }
 
 impl<'a> Hitable for &'a [Box<Hitable>] {
@@ -29,5 +31,28 @@ impl<'a> Hitable for &'a [Box<Hitable>] {
             }
         }
         hit_anything
+    }
+
+    fn bounding_box(&self, t0: f32, t1: f32, aabb: &mut Aabb) -> bool {
+        if self.is_empty() {
+            return false;
+        }
+
+        let mut temp_box = Aabb::default();
+        let first_true = self[0].bounding_box(t0, t1, &mut temp_box);
+        if !first_true {
+            return false;
+        } else {
+            *aabb = temp_box.clone();
+        }
+        for hitable in self.iter().skip(1) {
+            if hitable.bounding_box(t0, t1, &mut temp_box) {
+                *aabb = surrounding_box(aabb, &temp_box);
+            } else {
+                return false;
+            }
+        }
+
+        true
     }
 }

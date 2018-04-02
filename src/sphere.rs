@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use aabb::{surrounding_box, Aabb};
 use hitable::{HitRecord, Hitable};
 use material::Material;
 use ray::Ray;
@@ -49,6 +50,15 @@ impl Hitable for Sphere {
         }
 
         false
+    }
+
+    fn bounding_box(&self, t0: f32, t1: f32, aabb: &mut Aabb) -> bool {
+        *aabb = Aabb::new(
+            &(self.center - Vec3::new(self.radius, self.radius, self.radius)),
+            &(self.center + Vec3::new(self.radius, self.radius, self.radius)),
+        );
+
+        true
     }
 }
 
@@ -114,5 +124,20 @@ impl Hitable for MovingSphere {
         }
 
         false
+    }
+
+    fn bounding_box(&self, t0: f32, t1: f32, aabb: &mut Aabb) -> bool {
+        let aabb0 = Aabb::new(
+            &(self.center0 - Vec3::new(self.radius, self.radius, self.radius)),
+            &(self.center0 + Vec3::new(self.radius, self.radius, self.radius)),
+        );
+        let aabb1 = Aabb::new(
+            &(self.center1 - Vec3::new(self.radius, self.radius, self.radius)),
+            &(self.center1 + Vec3::new(self.radius, self.radius, self.radius)),
+        );
+
+        *aabb = surrounding_box(&aabb0, &aabb1);
+
+        true
     }
 }

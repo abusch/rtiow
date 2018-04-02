@@ -5,6 +5,7 @@
 
 extern crate rand;
 
+mod aabb;
 mod camera;
 mod hitable;
 mod material;
