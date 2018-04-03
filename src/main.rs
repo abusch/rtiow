@@ -64,15 +64,15 @@ fn random_in_unit_sphere() -> Vec3 {
     p
 }
 
-fn random_scene() -> Vec<Box<Hitable>> {
+fn random_scene() -> Vec<Arc<Hitable>> {
     let mut rng = rand::thread_rng();
     let n = 500;
     let mut list = Vec::with_capacity(n);
-    list.push(Box::new(Sphere::new(
+    list.push(Arc::new(Sphere::new(
         Vec3::new(0.0, -1000.0, 0.0),
         1000.0,
         Arc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5))),
-    )) as Box<Hitable>);
+    )) as Arc<Hitable>);
 
     for a in -11..11 {
         for b in -11..11 {
@@ -85,7 +85,7 @@ fn random_scene() -> Vec<Box<Hitable>> {
             if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
                 if choose_mat < 0.8 {
                     // diffuse
-                    list.push(Box::new(MovingSphere::new(
+                    list.push(Arc::new(MovingSphere::new(
                         center,
                         center + Vec3::new(0.0, 0.5 * rng.next_f32(), 0.0),
                         0.0,
@@ -96,10 +96,10 @@ fn random_scene() -> Vec<Box<Hitable>> {
                             rng.next_f32() * rng.next_f32(),
                             rng.next_f32() * rng.next_f32(),
                         ))),
-                    )) as Box<Hitable>)
+                    )) as Arc<Hitable>)
                 } else if choose_mat < 0.95 {
                     // metal
-                    list.push(Box::new(Sphere::new(
+                    list.push(Arc::new(Sphere::new(
                         center,
                         0.2,
                         Arc::new(Metal::new(
@@ -110,33 +110,33 @@ fn random_scene() -> Vec<Box<Hitable>> {
                             ),
                             0.5 * rng.next_f32(),
                         )),
-                    )) as Box<Hitable>);
+                    )) as Arc<Hitable>);
                 } else {
                     // dielectric
                     list.push(
-                        Box::new(Sphere::new(center, 0.2, Arc::new(Dielectric::new(1.5))))
-                            as Box<Hitable>,
+                        Arc::new(Sphere::new(center, 0.2, Arc::new(Dielectric::new(1.5))))
+                            as Arc<Hitable>,
                     );
                 }
             }
         }
     }
 
-    list.push(Box::new(Sphere::new(
+    list.push(Arc::new(Sphere::new(
         Vec3::new(0.0, 1.0, 0.0),
         1.0,
         Arc::new(Dielectric::new(1.5)) as Arc<Material>,
-    )) as Box<Hitable>);
-    list.push(Box::new(Sphere::new(
+    )) as Arc<Hitable>);
+    list.push(Arc::new(Sphere::new(
         Vec3::new(-4.0, 1.0, 0.0),
         1.0,
         Arc::new(Lambertian::new(Vec3::new(0.4, 0.3, 0.1))) as Arc<Material>,
-    )) as Box<Hitable>);
-    list.push(Box::new(Sphere::new(
+    )) as Arc<Hitable>);
+    list.push(Arc::new(Sphere::new(
         Vec3::new(4.0, 1.0, 0.0),
         1.0,
         Arc::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.0)) as Arc<Material>,
-    )) as Box<Hitable>);
+    )) as Arc<Hitable>);
 
     list
 }
@@ -187,7 +187,7 @@ fn main() {
     //     0.5,
     //     Arc::new(Dielectric::new(1.5)) as Arc<Material>,
     // )) as Box<Hitable>);
-    let world: &[Box<Hitable>] = &random_scene()[..];
+    let world: &[Arc<Hitable>] = &random_scene()[..];
     for j in (0..ny).rev() {
         for i in 0..nx {
             let mut col = Vec3::default();

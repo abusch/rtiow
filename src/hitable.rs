@@ -18,7 +18,7 @@ pub trait Hitable {
     fn bounding_box(&self, t0: f32, t1: f32, aabb: &mut Aabb) -> bool;
 }
 
-impl<'a> Hitable for &'a [Box<Hitable>] {
+impl<'a> Hitable for &'a [Arc<Hitable>] {
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
         let mut temp_hit = HitRecord::default();
         let mut hit_anything = false;
