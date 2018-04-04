@@ -19,6 +19,7 @@ use std::sync::Arc;
 
 use rand::Rng;
 
+use bvh::BvhNode;
 use camera::Camera;
 use hitable::{HitRecord, Hitable};
 use material::{Dielectric, Lambertian, Material, Metal};
@@ -147,7 +148,7 @@ fn main() {
     // height
     let ny = 200;
     // number of samples
-    let ns = 100;
+    let ns = 10;
 
     println!("P3\n{} {}\n255", nx, ny);
 
@@ -187,7 +188,8 @@ fn main() {
     //     0.5,
     //     Arc::new(Dielectric::new(1.5)) as Arc<Material>,
     // )) as Box<Hitable>);
-    let world: &[Arc<Hitable>] = &random_scene()[..];
+    let mut world = random_scene();
+    let bvh = BvhNode::new(&mut world, 0.0, 0.0);
     for j in (0..ny).rev() {
         for i in 0..nx {
             let mut col = Vec3::default();
@@ -195,7 +197,7 @@ fn main() {
                 let u = (i as f32 + rng.next_f32()) / nx as f32;
                 let v = (j as f32 + rng.next_f32()) / ny as f32;
                 let ray = camera.get_ray(u, v);
-                col += color(&ray, &world, 0);
+                col += color(&ray, &bvh, 0);
             }
             col /= ns as f32;
             col = Vec3::new(f32::sqrt(col.r()), f32::sqrt(col.g()), f32::sqrt(col.b()));
