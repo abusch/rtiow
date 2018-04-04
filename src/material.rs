@@ -1,10 +1,12 @@
 use std::fmt::Debug;
+use std::sync::Arc;
 
 use rand::{self, Rng};
 
 use hitable::HitRecord;
 use random_in_unit_sphere;
 use ray::Ray;
+use texture::{ConstantTexture, Texture};
 use vec::{dot, unit_vector, Vec3};
 
 pub trait Material: Debug {
@@ -19,14 +21,20 @@ pub trait Material: Debug {
 
 /// Lambertian (diffuse) material. It scatters light uniformly in every direction (independently of
 /// the viewing direction).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct Lambertian {
-    albedo: Vec3,
+    albedo: Arc<Texture>,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Vec3) -> Lambertian {
+    pub fn new(albedo: Arc<Texture>) -> Lambertian {
         Lambertian { albedo }
+    }
+
+    pub fn constant(albedo: Vec3) -> Lambertian {
+        Lambertian {
+            albedo: Arc::new(ConstantTexture::new(albedo)),
+        }
     }
 }
 
@@ -40,7 +48,7 @@ impl Material for Lambertian {
     ) -> bool {
         let target = rec.p + rec.normal + random_in_unit_sphere();
         *scattered = Ray::with_time(&rec.p, &(target - rec.p), r_in.time());
-        attenuation.clone_from(&self.albedo);
+        *attenuation = self.albedo.value(0.0, 0.0, &rec.p);
         true
     }
 }

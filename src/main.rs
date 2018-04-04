@@ -12,6 +12,7 @@ mod hitable;
 mod material;
 mod ray;
 mod sphere;
+mod texture;
 mod vec;
 
 use std::f32;
@@ -25,6 +26,7 @@ use hitable::{HitRecord, Hitable};
 use material::{Dielectric, Lambertian, Material, Metal};
 use ray::Ray;
 use sphere::{MovingSphere, Sphere};
+use texture::{CheckerTexture, ConstantTexture};
 use vec::{unit_vector, Vec3};
 
 fn color(r: &Ray, world: &Hitable, depth: u32) -> Vec3 {
@@ -72,7 +74,10 @@ fn random_scene() -> Vec<Arc<Hitable>> {
     list.push(Arc::new(Sphere::new(
         Vec3::new(0.0, -1000.0, 0.0),
         1000.0,
-        Arc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5))),
+        Arc::new(Lambertian::new(Arc::new(CheckerTexture::new(
+            Arc::new(ConstantTexture::new(Vec3::new(0.2, 0.3, 0.1))),
+            Arc::new(ConstantTexture::new(Vec3::new(0.9, 0.9, 0.9))),
+        )))),
     )) as Arc<Hitable>);
 
     for a in -11..11 {
@@ -92,7 +97,7 @@ fn random_scene() -> Vec<Arc<Hitable>> {
                         0.0,
                         1.0,
                         0.2,
-                        Arc::new(Lambertian::new(Vec3::new(
+                        Arc::new(Lambertian::constant(Vec3::new(
                             rng.next_f32() * rng.next_f32(),
                             rng.next_f32() * rng.next_f32(),
                             rng.next_f32() * rng.next_f32(),
@@ -131,7 +136,7 @@ fn random_scene() -> Vec<Arc<Hitable>> {
     list.push(Arc::new(Sphere::new(
         Vec3::new(-4.0, 1.0, 0.0),
         1.0,
-        Arc::new(Lambertian::new(Vec3::new(0.4, 0.3, 0.1))) as Arc<Material>,
+        Arc::new(Lambertian::constant(Vec3::new(0.4, 0.3, 0.1))) as Arc<Material>,
     )) as Arc<Hitable>);
     list.push(Arc::new(Sphere::new(
         Vec3::new(4.0, 1.0, 0.0),
