@@ -6,3 +6,5 @@ authors = ["Antoine Busch <abusch@atlassian.com>"]
 [dependencies]
 lazy_static = "*"
 rand = "*"
+log = "0.4"
+env_logger="*"

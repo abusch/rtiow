@@ -6,6 +6,9 @@
 extern crate rand;
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate log;
+extern crate env_logger;
 
 mod aabb;
 mod bvh;
@@ -19,6 +22,8 @@ mod texture;
 mod vec;
 
 use std::f32;
+use std::fs::File;
+use std::io::{BufWriter, Write};
 use std::sync::Arc;
 
 use rand::Rng;
@@ -169,6 +174,8 @@ fn random_scene() -> Vec<Arc<Hitable>> {
 }
 
 fn main() {
+    env_logger::init();
+
     // width
     let nx = 400;
     // height
@@ -176,8 +183,11 @@ fn main() {
     // number of samples
     let ns = 10;
 
-    println!("P3\n{} {}\n255", nx, ny);
+    let file = File::create("out.ppm").unwrap();
+    let mut out = BufWriter::new(file);
+    writeln!(out, "P3\n{} {}\n255", nx, ny).unwrap();
 
+    info!("Rendering {}x{} image...", nx, ny);
     let mut rng = rand::thread_rng();
     let lookfrom = Vec3::new(13.0, 2.0, 3.0);
     let lookat = Vec3::new(0.0, 0.0, 0.0);
@@ -232,7 +242,7 @@ fn main() {
             let ir = col[0] as u32;
             let ig = col[1] as u32;
             let ib = col[2] as u32;
-            println!("{} {} {}", ir, ig, ib);
+            writeln!(out, "{} {} {}", ir, ig, ib).unwrap();
         }
     }
 }
