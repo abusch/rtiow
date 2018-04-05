@@ -2,6 +2,7 @@ use std::f32;
 use std::fmt::Debug;
 use std::sync::Arc;
 
+use perlin;
 use vec::Vec3;
 
 pub trait Texture: Debug {
@@ -45,5 +46,25 @@ impl Texture for CheckerTexture {
         } else {
             self.even.value(u, v, p)
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct NoiseTexture {
+    scale: f32,
+}
+
+impl NoiseTexture {
+    pub fn new(scale: f32) -> NoiseTexture {
+        NoiseTexture { scale }
+    }
+}
+
+impl Texture for NoiseTexture {
+    fn value(&self, u: f32, v: f32, p: &Vec3) -> Vec3 {
+        // 0.5 * (1.0 + perlin::turb(&(self.scale * p), 7)) * Vec3::new(1.0, 1.0, 1.0)
+        // perlin::turb(&(self.scale * p), 7) * Vec3::new(1.0, 1.0, 1.0)
+        0.5 * (1.0 + f32::sin(self.scale * p.z() + 10.0 * perlin::turb(&(self.scale * p), 7)))
+            * Vec3::new(1.0, 1.0, 1.0)
     }
 }

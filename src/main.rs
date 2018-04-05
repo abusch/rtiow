@@ -4,12 +4,15 @@
 #![allow(non_snake_case)]
 
 extern crate rand;
+#[macro_use]
+extern crate lazy_static;
 
 mod aabb;
 mod bvh;
 mod camera;
 mod hitable;
 mod material;
+mod perlin;
 mod ray;
 mod sphere;
 mod texture;
@@ -26,7 +29,7 @@ use hitable::{HitRecord, Hitable};
 use material::{Dielectric, Lambertian, Material, Metal};
 use ray::Ray;
 use sphere::{MovingSphere, Sphere};
-use texture::{CheckerTexture, ConstantTexture};
+use texture::{CheckerTexture, ConstantTexture, NoiseTexture};
 use vec::{unit_vector, Vec3};
 
 fn color(r: &Ray, world: &Hitable, depth: u32) -> Vec3 {
@@ -65,6 +68,24 @@ fn random_in_unit_sphere() -> Vec3 {
     }
 
     p
+}
+
+fn two_perlin_spheres() -> Vec<Arc<Hitable>> {
+    let perltext = Arc::new(NoiseTexture::new(4.0));
+    let mut list = Vec::new();
+
+    list.push(Arc::new(Sphere::new(
+        Vec3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Arc::new(Lambertian::new(perltext.clone())),
+    )) as Arc<Hitable>);
+    list.push(Arc::new(Sphere::new(
+        Vec3::new(0.0, 2.0, 0.0),
+        2.0,
+        Arc::new(Lambertian::new(perltext.clone())),
+    )) as Arc<Hitable>);
+
+    list
 }
 
 fn random_scene() -> Vec<Arc<Hitable>> {
@@ -193,7 +214,8 @@ fn main() {
     //     0.5,
     //     Arc::new(Dielectric::new(1.5)) as Arc<Material>,
     // )) as Box<Hitable>);
-    let mut world = random_scene();
+    // let mut world = random_scene();
+    let mut world = two_perlin_spheres();
     let bvh = BvhNode::new(&mut world, 0.0, 0.0);
     for j in (0..ny).rev() {
         for i in 0..nx {
