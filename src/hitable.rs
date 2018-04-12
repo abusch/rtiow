@@ -11,6 +11,8 @@ pub struct HitRecord {
     pub p: Vec3,
     pub normal: Vec3,
     pub mat: Option<Arc<Material>>,
+    pub u: f32,
+    pub v: f32,
 }
 
 pub trait Hitable {

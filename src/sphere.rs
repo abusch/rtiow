@@ -1,3 +1,4 @@
+use std::f32;
 use std::sync::Arc;
 
 use aabb::{surrounding_box, Aabb};
@@ -37,6 +38,9 @@ impl Hitable for Sphere {
                 rec.p = r.point_at_parameter(rec.t);
                 rec.normal = (rec.p - self.center) / self.radius;
                 rec.mat = Some(Arc::clone(&self.material));
+                let (u, v) = get_sphere_uv(&((&rec.p - &self.center) / self.radius));
+                rec.u = u;
+                rec.v = v;
                 return true;
             }
             let temp = (-b + f32::sqrt(discriminant)) / a;
@@ -45,6 +49,9 @@ impl Hitable for Sphere {
                 rec.p = r.point_at_parameter(rec.t);
                 rec.normal = (rec.p - self.center) / self.radius;
                 rec.mat = Some(Arc::clone(&self.material));
+                let (u, v) = get_sphere_uv(&((&rec.p - &self.center) / self.radius));
+                rec.u = u;
+                rec.v = v;
                 return true;
             }
         }
@@ -140,4 +147,13 @@ impl Hitable for MovingSphere {
 
         true
     }
+}
+
+fn get_sphere_uv(p: &Vec3) -> (f32, f32) {
+    let phi = f32::atan2(p.z(), p.x());
+    let theta = f32::asin(p.y());
+    let u = 1.0 - (phi + f32::consts::PI) / (2.0 * f32::consts::PI);
+    let v = (theta + f32::consts::FRAC_PI_2) * f32::consts::FRAC_1_PI;
+
+    (u, v)
 }
