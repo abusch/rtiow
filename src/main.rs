@@ -35,7 +35,7 @@ use camera::Camera;
 use hitable::{HitRecord, Hitable};
 use material::{Dielectric, DiffuseLight, Lambertian, Material, Metal};
 use ray::Ray;
-use rect::XYRect;
+use rect::*;
 use sphere::{MovingSphere, Sphere};
 use texture::*;
 use vec::Vec3;
@@ -76,6 +76,59 @@ fn random_in_unit_sphere() -> Vec3 {
     p
 }
 
+fn cornell_box() -> Vec<Arc<Hitable>> {
+    let perltext = Arc::new(NoiseTexture::new(4.0));
+    let mut list: Vec<Arc<Hitable>> = Vec::new();
+    let red: Arc<Material> = Arc::new(Lambertian::constant(Vec3::new(0.65, 0.05, 0.05)));
+    let green: Arc<Material> = Arc::new(Lambertian::constant(Vec3::new(0.12, 0.45, 0.15)));
+    let white: Arc<Material> = Arc::new(Lambertian::constant(Vec3::new(0.73, 0.73, 0.73)));
+    let light: Arc<Material> = Arc::new(DiffuseLight::new(Arc::new(ConstantTexture::new(
+        Vec3::new(15.0, 15.0, 15.0),
+    ))));
+
+    list.push(Arc::new(YZRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        green.clone(),
+    )));
+    list.push(Arc::new(YZRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        red.clone(),
+    )));
+    list.push(Arc::new(XZRect::new(
+        213.0,
+        343.0,
+        227.0,
+        332.0,
+        554.0,
+        light.clone(),
+    )));
+    list.push(Arc::new(XZRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        white.clone(),
+    )));
+    list.push(Arc::new(YZRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+    )));
+
+    list
+}
 fn simple_light() -> Vec<Arc<Hitable>> {
     let perltext = Arc::new(NoiseTexture::new(4.0));
     let mut list: Vec<Arc<Hitable>> = Vec::new();
@@ -217,7 +270,7 @@ fn main() {
     // height
     let ny = 200;
     // number of samples
-    let ns = 100;
+    let ns = 20;
 
     let file = File::create("out.ppm").unwrap();
     let mut out = BufWriter::new(file);
@@ -225,8 +278,8 @@ fn main() {
 
     info!("Rendering {}x{} image...", nx, ny);
     let mut rng = rand::thread_rng();
-    let lookfrom = Vec3::new(13.0, 2.0, 1.0);
-    let lookat = Vec3::new(0.0, 0.0, 0.0);
+    let lookfrom = Vec3::new(278.0, 278.0, -800.0);
+    let lookat = Vec3::new(278.0, 278.0, 0.0);
     let dist_focus = 10.0;
     let camera = Camera::new(
         lookfrom,
@@ -234,14 +287,13 @@ fn main() {
         Vec3::new(0.0, 1.0, 0.0),
         40.0,
         nx as f32 / ny as f32,
-        0.1,
+        0.0,
         0.0,
         1.0,
         dist_focus,
     );
-    let mut world = simple_light();
+    let mut world = cornell_box();
     // let mut world = random_scene();
-    // let mut world = two_perlin_spheres();
     let bvh = BvhNode::new(&mut world[..], 0.0, 0.0);
     for j in (0..ny).rev() {
         for i in 0..nx {
