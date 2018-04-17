@@ -18,6 +18,7 @@ mod hitable;
 mod material;
 mod perlin;
 mod ray;
+mod rect;
 mod sphere;
 mod texture;
 mod vec;
@@ -32,8 +33,9 @@ use rand::Rng;
 use bvh::BvhNode;
 use camera::Camera;
 use hitable::{HitRecord, Hitable};
-use material::{Dielectric, Lambertian, Material, Metal};
+use material::{Dielectric, DiffuseLight, Lambertian, Material, Metal};
 use ray::Ray;
+use rect::XYRect;
 use sphere::{MovingSphere, Sphere};
 use texture::*;
 use vec::Vec3;
@@ -72,6 +74,41 @@ fn random_in_unit_sphere() -> Vec3 {
     }
 
     p
+}
+
+fn simple_light() -> Vec<Arc<Hitable>> {
+    let perltext = Arc::new(NoiseTexture::new(4.0));
+    let mut list: Vec<Arc<Hitable>> = Vec::new();
+
+    list.push(Arc::new(Sphere::new(
+        Vec3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Arc::new(Lambertian::new(perltext.clone())),
+    )));
+    list.push(Arc::new(Sphere::new(
+        Vec3::new(0.0, 2.0, 0.0),
+        2.0,
+        Arc::new(Lambertian::new(perltext.clone())),
+    )));
+    list.push(Arc::new(Sphere::new(
+        Vec3::new(0.0, 7.0, 0.0),
+        2.0,
+        Arc::new(DiffuseLight::new(Arc::new(ConstantTexture::new(
+            Vec3::new(4.0, 4.0, 4.0),
+        )))),
+    )));
+    list.push(Arc::new(XYRect::new(
+        3.0,
+        5.0,
+        1.0,
+        3.0,
+        -2.0,
+        Arc::new(DiffuseLight::new(Arc::new(ConstantTexture::new(
+            Vec3::new(4.0, 4.0, 4.0),
+        )))),
+    )));
+
+    list
 }
 
 fn two_perlin_spheres() -> Vec<Arc<Hitable>> {
@@ -180,7 +217,7 @@ fn main() {
     // height
     let ny = 200;
     // number of samples
-    let ns = 10;
+    let ns = 100;
 
     let file = File::create("out.ppm").unwrap();
     let mut out = BufWriter::new(file);
@@ -188,43 +225,21 @@ fn main() {
 
     info!("Rendering {}x{} image...", nx, ny);
     let mut rng = rand::thread_rng();
-    // let lookfrom = Vec3::new(13.0, 2.0, 3.0);
-    let lookfrom = Vec3::new(0.0, 0.0, 0.0);
-    let lookat = Vec3::new(0.0, 0.0, -1.0);
-    let dist_focus = 1.0;
+    let lookfrom = Vec3::new(13.0, 2.0, 1.0);
+    let lookat = Vec3::new(0.0, 0.0, 0.0);
+    let dist_focus = 10.0;
     let camera = Camera::new(
         lookfrom,
         lookat,
         Vec3::new(0.0, 1.0, 0.0),
-        60.0,
+        40.0,
         nx as f32 / ny as f32,
-        0.01,
+        0.1,
         0.0,
         1.0,
         dist_focus,
     );
-    let mut world = Vec::new();
-    world.push(Arc::new(Sphere::new(
-        Vec3::new(0., 0., -1.),
-        0.5,
-        // Arc::new(Lambertian::constant(Vec3::new(0.1, 0.2, 0.5))) as Arc<Material>,
-        Arc::new(Lambertian::new(Arc::new(ImageTexture::new("earthmap.jpg")))) as Arc<Material>,
-    )) as Arc<Hitable>);
-    world.push(Arc::new(Sphere::new(
-        Vec3::new(0., -100.5, -1.),
-        100.,
-        Arc::new(Lambertian::constant(Vec3::new(0.8, 0.8, 0.0))) as Arc<Material>,
-    )) as Arc<Hitable>);
-    world.push(Arc::new(Sphere::new(
-        Vec3::new(1., 0., -1.),
-        0.5,
-        Arc::new(Metal::new(Vec3::new(0.8, 0.6, 0.3), 1.)) as Arc<Material>,
-    )) as Arc<Hitable>);
-    world.push(Arc::new(Sphere::new(
-        Vec3::new(-1., 0., -1.),
-        0.5,
-        Arc::new(Dielectric::new(1.5)) as Arc<Material>,
-    )) as Arc<Hitable>);
+    let mut world = simple_light();
     // let mut world = random_scene();
     // let mut world = two_perlin_spheres();
     let bvh = BvhNode::new(&mut world[..], 0.0, 0.0);
