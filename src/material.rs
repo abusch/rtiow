@@ -17,6 +17,10 @@ pub trait Material: Debug {
         attenuation: &mut Vec3,
         scattered: &mut Ray,
     ) -> bool;
+
+    fn emitted(&self, u: f32, v: f32, p: &Vec3) -> Vec3 {
+        Vec3::default()
+    }
 }
 
 /// Lambertian (diffuse) material. It scatters light uniformly in every direction (independently of
@@ -141,6 +145,33 @@ impl Material for Dielectric {
         }
 
         true
+    }
+}
+
+#[derive(Debug)]
+pub struct DiffuseLight {
+    emit: Arc<Texture>,
+}
+
+impl DiffuseLight {
+    pub fn new(emit: Arc<Texture>) -> DiffuseLight {
+        DiffuseLight { emit }
+    }
+}
+
+impl Material for DiffuseLight {
+    fn scatter(
+        &self,
+        _r_in: &Ray,
+        _rec: &HitRecord,
+        _attenuation: &mut Vec3,
+        _scattered: &mut Ray,
+    ) -> bool {
+        false
+    }
+
+    fn emitted(&self, u: f32, v: f32, p: &Vec3) -> Vec3 {
+        self.emit.value(u, v, p)
     }
 }
 

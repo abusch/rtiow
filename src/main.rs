@@ -9,6 +9,7 @@ extern crate lazy_static;
 #[macro_use]
 extern crate log;
 extern crate env_logger;
+extern crate image;
 
 mod aabb;
 mod bvh;
@@ -34,14 +35,15 @@ use hitable::{HitRecord, Hitable};
 use material::{Dielectric, Lambertian, Material, Metal};
 use ray::Ray;
 use sphere::{MovingSphere, Sphere};
-use texture::{CheckerTexture, ConstantTexture, NoiseTexture};
-use vec::{unit_vector, Vec3};
+use texture::*;
+use vec::Vec3;
 
 fn color(r: &Ray, world: &Hitable, depth: u32) -> Vec3 {
     let mut rec = HitRecord::default();
     if world.hit(r, 0.001, f32::INFINITY, &mut rec) {
         let mut scattered = Ray::default();
         let mut attenuation = Vec3::default();
+        let emitted = rec.mat.as_ref().unwrap().emitted(rec.u, rec.v, &rec.p);
         if depth < 50 && rec.mat.is_some()
             && rec.mat
                 .as_ref()
@@ -50,15 +52,12 @@ fn color(r: &Ray, world: &Hitable, depth: u32) -> Vec3 {
                 .scatter(r, &rec, &mut attenuation, &mut scattered)
         {
             // if we hit a surface with a material, recurse along the scattered ray
-            attenuation * color(&scattered, world, depth + 1)
+            emitted + attenuation * color(&scattered, world, depth + 1)
         } else {
-            // return black
-            Vec3::new(0.0, 0.0, 0.0)
+            emitted
         }
     } else {
-        let unit_direction = unit_vector(r.direction());
-        let t = 0.5 * (unit_direction.y() + 1.0);
-        (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
+        Vec3::default()
     }
 }
 
@@ -189,44 +188,46 @@ fn main() {
 
     info!("Rendering {}x{} image...", nx, ny);
     let mut rng = rand::thread_rng();
-    let lookfrom = Vec3::new(13.0, 2.0, 3.0);
-    let lookat = Vec3::new(0.0, 0.0, 0.0);
-    let dist_focus = 10.0;
+    // let lookfrom = Vec3::new(13.0, 2.0, 3.0);
+    let lookfrom = Vec3::new(0.0, 0.0, 0.0);
+    let lookat = Vec3::new(0.0, 0.0, -1.0);
+    let dist_focus = 1.0;
     let camera = Camera::new(
         lookfrom,
         lookat,
         Vec3::new(0.0, 1.0, 0.0),
-        20.0,
+        60.0,
         nx as f32 / ny as f32,
-        0.1,
+        0.01,
         0.0,
         1.0,
         dist_focus,
     );
-    // let mut world = Vec::new();
-    // world.push(Box::new(Sphere::new(
-    //     Vec3::new(0., 0., -1.),
-    //     0.5,
-    //     Arc::new(Lambertian::new(Vec3::new(0.1, 0.2, 0.5))) as Arc<Material>,
-    // )) as Box<Hitable>);
-    // world.push(Box::new(Sphere::new(
-    //     Vec3::new(0., -100.5, -1.),
-    //     100.,
-    //     Arc::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.0))) as Arc<Material>,
-    // )) as Box<Hitable>);
-    // world.push(Box::new(Sphere::new(
-    //     Vec3::new(1., 0., -1.),
-    //     0.5,
-    //     Arc::new(Metal::new(Vec3::new(0.8, 0.6, 0.3), 1.)) as Arc<Material>,
-    // )) as Box<Hitable>);
-    // world.push(Box::new(Sphere::new(
-    //     Vec3::new(-1., 0., -1.),
-    //     0.5,
-    //     Arc::new(Dielectric::new(1.5)) as Arc<Material>,
-    // )) as Box<Hitable>);
+    let mut world = Vec::new();
+    world.push(Arc::new(Sphere::new(
+        Vec3::new(0., 0., -1.),
+        0.5,
+        // Arc::new(Lambertian::constant(Vec3::new(0.1, 0.2, 0.5))) as Arc<Material>,
+        Arc::new(Lambertian::new(Arc::new(ImageTexture::new("earthmap.jpg")))) as Arc<Material>,
+    )) as Arc<Hitable>);
+    world.push(Arc::new(Sphere::new(
+        Vec3::new(0., -100.5, -1.),
+        100.,
+        Arc::new(Lambertian::constant(Vec3::new(0.8, 0.8, 0.0))) as Arc<Material>,
+    )) as Arc<Hitable>);
+    world.push(Arc::new(Sphere::new(
+        Vec3::new(1., 0., -1.),
+        0.5,
+        Arc::new(Metal::new(Vec3::new(0.8, 0.6, 0.3), 1.)) as Arc<Material>,
+    )) as Arc<Hitable>);
+    world.push(Arc::new(Sphere::new(
+        Vec3::new(-1., 0., -1.),
+        0.5,
+        Arc::new(Dielectric::new(1.5)) as Arc<Material>,
+    )) as Arc<Hitable>);
     // let mut world = random_scene();
-    let mut world = two_perlin_spheres();
-    let bvh = BvhNode::new(&mut world, 0.0, 0.0);
+    // let mut world = two_perlin_spheres();
+    let bvh = BvhNode::new(&mut world[..], 0.0, 0.0);
     for j in (0..ny).rev() {
         for i in 0..nx {
             let mut col = Vec3::default();
