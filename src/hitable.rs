@@ -58,3 +58,26 @@ impl<'a> Hitable for &'a [Arc<Hitable>] {
         true
     }
 }
+
+pub struct FlipNormals {
+    ptr: Arc<Hitable>,
+}
+
+impl FlipNormals {
+    pub fn new(ptr: Arc<Hitable>) -> FlipNormals {
+        FlipNormals { ptr }
+    }
+}
+
+impl Hitable for FlipNormals {
+    fn hit(&self, r: &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
+        let res = self.ptr.hit(r, t_min, t_max, rec);
+        rec.normal = -rec.normal;
+
+        res
+    }
+
+    fn bounding_box(&self, t0: f32, t1: f32, aabb: &mut Aabb) -> bool {
+        self.ptr.bounding_box(t0, t1, aabb)
+    }
+}

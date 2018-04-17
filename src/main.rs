@@ -32,7 +32,7 @@ use rand::Rng;
 
 use bvh::BvhNode;
 use camera::Camera;
-use hitable::{HitRecord, Hitable};
+use hitable::*;
 use material::{Dielectric, DiffuseLight, Lambertian, Material, Metal};
 use ray::Ray;
 use rect::*;
@@ -86,14 +86,14 @@ fn cornell_box() -> Vec<Arc<Hitable>> {
         Vec3::new(15.0, 15.0, 15.0),
     ))));
 
-    list.push(Arc::new(YZRect::new(
+    list.push(Arc::new(FlipNormals::new(Arc::new(YZRect::new(
         0.0,
         555.0,
         0.0,
         555.0,
         555.0,
         green.clone(),
-    )));
+    )))));
     list.push(Arc::new(YZRect::new(
         0.0,
         555.0,
@@ -110,6 +110,14 @@ fn cornell_box() -> Vec<Arc<Hitable>> {
         554.0,
         light.clone(),
     )));
+    list.push(Arc::new(FlipNormals::new(Arc::new(XZRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+    )))));
     list.push(Arc::new(XZRect::new(
         0.0,
         555.0,
@@ -118,14 +126,14 @@ fn cornell_box() -> Vec<Arc<Hitable>> {
         0.0,
         white.clone(),
     )));
-    list.push(Arc::new(YZRect::new(
+    list.push(Arc::new(FlipNormals::new(Arc::new(XYRect::new(
         0.0,
         555.0,
         0.0,
         555.0,
         555.0,
         white.clone(),
-    )));
+    )))));
 
     list
 }
@@ -270,7 +278,7 @@ fn main() {
     // height
     let ny = 200;
     // number of samples
-    let ns = 20;
+    let ns = 1000;
 
     let file = File::create("out.ppm").unwrap();
     let mut out = BufWriter::new(file);
