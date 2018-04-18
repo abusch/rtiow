@@ -73,7 +73,6 @@ fn random_in_unit_sphere() -> Vec3 {
 }
 
 fn cornell_box() -> Vec<Arc<Hitable>> {
-    let perltext = Arc::new(NoiseTexture::new(4.0));
     let mut list: Vec<Arc<Hitable>> = Vec::new();
     let red: Arc<Material> = Arc::new(Lambertian::constant(Vec3::new(0.65, 0.05, 0.05)));
     let green: Arc<Material> = Arc::new(Lambertian::constant(Vec3::new(0.12, 0.45, 0.15)));
@@ -130,9 +129,21 @@ fn cornell_box() -> Vec<Arc<Hitable>> {
         555.0,
         white.clone(),
     )))));
+    // boxes
+    list.push(Arc::new(Boxx::new(
+        Vec3::new(130.0, 0.0, 65.0),
+        Vec3::new(295.0, 165.0, 230.0),
+        white.clone(),
+    )));
+    list.push(Arc::new(Boxx::new(
+        Vec3::new(265.0, 0.0, 295.0),
+        Vec3::new(430.0, 330.0, 460.0),
+        white.clone(),
+    )));
 
     list
 }
+
 fn simple_light() -> Vec<Arc<Hitable>> {
     let perltext = Arc::new(NoiseTexture::new(4.0));
     let mut list: Vec<Arc<Hitable>> = Vec::new();
@@ -274,7 +285,7 @@ fn main() {
     // height
     let ny = 200;
     // number of samples
-    let ns = 1500;
+    let ns = 1000;
 
     let file = File::create("out.ppm").unwrap();
     let mut out = BufWriter::new(file);

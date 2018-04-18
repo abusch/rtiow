@@ -1,8 +1,10 @@
+mod boxx;
 mod rect;
 mod sphere;
 
 use std::sync::Arc;
 
+pub use self::boxx::*;
 pub use self::rect::*;
 pub use self::sphere::*;
 
