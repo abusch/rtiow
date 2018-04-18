@@ -18,8 +18,6 @@ mod hitable;
 mod material;
 mod perlin;
 mod ray;
-mod rect;
-mod sphere;
 mod texture;
 mod vec;
 
@@ -35,8 +33,6 @@ use camera::Camera;
 use hitable::*;
 use material::{Dielectric, DiffuseLight, Lambertian, Material, Metal};
 use ray::Ray;
-use rect::*;
-use sphere::{MovingSphere, Sphere};
 use texture::*;
 use vec::Vec3;
 
@@ -278,7 +274,7 @@ fn main() {
     // height
     let ny = 200;
     // number of samples
-    let ns = 1000;
+    let ns = 1500;
 
     let file = File::create("out.ppm").unwrap();
     let mut out = BufWriter::new(file);

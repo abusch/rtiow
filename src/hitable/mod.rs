@@ -1,4 +1,10 @@
+mod rect;
+mod sphere;
+
 use std::sync::Arc;
+
+pub use self::rect::*;
+pub use self::sphere::*;
 
 use aabb::{surrounding_box, Aabb};
 use material::Material;
