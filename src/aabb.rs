@@ -1,7 +1,7 @@
 use std::f32;
 
-use ray::Ray;
-use vec::Vec3;
+use crate::ray::Ray;
+use crate::vec::Vec3;
 
 #[derive(Debug, Clone, Default)]
 pub struct Aabb {

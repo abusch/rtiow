@@ -3,10 +3,11 @@ use std::fmt::Debug;
 use std::path::Path;
 use std::sync::Arc;
 
-use image::{self, GenericImage};
+use image::{self, GenericImageView};
+use log::{info, warn};
 
-use perlin;
-use vec::Vec3;
+use crate::perlin;
+use crate::vec::Vec3;
 
 pub trait Texture: Debug {
     fn value(&self, u: f32, v: f32, p: &Vec3) -> Vec3;
@@ -24,19 +25,19 @@ impl ConstantTexture {
 }
 
 impl Texture for ConstantTexture {
-    fn value(&self, u: f32, v: f32, p: &Vec3) -> Vec3 {
+    fn value(&self, _u: f32, _v: f32, _p: &Vec3) -> Vec3 {
         self.color
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct CheckerTexture {
-    odd: Arc<Texture>,
-    even: Arc<Texture>,
+    odd: Arc<dyn Texture>,
+    even: Arc<dyn Texture>,
 }
 
 impl CheckerTexture {
-    pub fn new(t0: Arc<Texture>, t1: Arc<Texture>) -> CheckerTexture {
+    pub fn new(t0: Arc<dyn Texture>, t1: Arc<dyn Texture>) -> CheckerTexture {
         CheckerTexture { odd: t0, even: t1 }
     }
 }
@@ -85,7 +86,7 @@ impl ImageTexture {
         let (img, nx, ny) = match image::open(filename) {
             Ok(data) => {
                 let (nx, ny) = data.dimensions();
-                (data.to_rgb().into_raw().into_boxed_slice(), nx, ny)
+                (data.to_rgb8().into_raw().into_boxed_slice(), nx, ny)
             }
             Err(e) => {
                 warn!("Failed to open image {}: {}", filename.display(), e);

@@ -1,15 +1,7 @@
 //! This is my implementation of the raytracer described in "Ray Tracing In One Weekend" by Peter
 //! Shirley.
 #![deny(missing_docs)]
-#![allow(non_snake_case)]
-
-extern crate rand;
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate log;
-extern crate env_logger;
-extern crate image;
+#![allow(non_snake_case, dead_code)]
 
 mod aabb;
 mod bvh;
@@ -26,17 +18,18 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::sync::Arc;
 
+use log::info;
 use rand::Rng;
 
-use bvh::BvhNode;
-use camera::Camera;
-use hitable::*;
-use material::{Dielectric, DiffuseLight, Lambertian, Material, Metal};
-use ray::Ray;
-use texture::*;
-use vec::Vec3;
+use crate::bvh::BvhNode;
+use crate::camera::Camera;
+use crate::hitable::*;
+use crate::material::{Dielectric, DiffuseLight, Lambertian, Material, Metal};
+use crate::ray::Ray;
+use crate::texture::*;
+use crate::vec::Vec3;
 
-fn color(r: &Ray, world: &Hitable, depth: u32) -> Vec3 {
+fn color(r: &Ray, world: &dyn Hitable, depth: u32) -> Vec3 {
     let mut rec = HitRecord::default();
     if world.hit(r, 0.001, f32::INFINITY, &mut rec) {
         let mut scattered = Ray::default();
@@ -63,7 +56,7 @@ fn random_in_unit_sphere() -> Vec3 {
     let mut rng = rand::thread_rng();
     let mut p;
     loop {
-        p = 2. * Vec3::new(rng.next_f32(), rng.next_f32(), rng.next_f32()) - Vec3::new(1., 1., 1.);
+        p = 2. * Vec3::new(rng.gen(), rng.gen(), rng.gen()) - Vec3::new(1., 1., 1.);
         if p.squared_length() < 1. {
             break;
         }
@@ -72,12 +65,12 @@ fn random_in_unit_sphere() -> Vec3 {
     p
 }
 
-fn cornell_box() -> Vec<Arc<Hitable>> {
-    let mut list: Vec<Arc<Hitable>> = Vec::new();
-    let red: Arc<Material> = Arc::new(Lambertian::constant(Vec3::new(0.65, 0.05, 0.05)));
-    let green: Arc<Material> = Arc::new(Lambertian::constant(Vec3::new(0.12, 0.45, 0.15)));
-    let white: Arc<Material> = Arc::new(Lambertian::constant(Vec3::new(0.73, 0.73, 0.73)));
-    let light: Arc<Material> = Arc::new(DiffuseLight::new(Arc::new(ConstantTexture::new(
+fn cornell_box() -> Vec<Arc<dyn Hitable>> {
+    let mut list: Vec<Arc<dyn Hitable>> = Vec::new();
+    let red: Arc<dyn Material> = Arc::new(Lambertian::constant(Vec3::new(0.65, 0.05, 0.05)));
+    let green: Arc<dyn Material> = Arc::new(Lambertian::constant(Vec3::new(0.12, 0.45, 0.15)));
+    let white: Arc<dyn Material> = Arc::new(Lambertian::constant(Vec3::new(0.73, 0.73, 0.73)));
+    let light: Arc<dyn Material> = Arc::new(DiffuseLight::new(Arc::new(ConstantTexture::new(
         Vec3::new(15.0, 15.0, 15.0),
     ))));
 
@@ -144,9 +137,9 @@ fn cornell_box() -> Vec<Arc<Hitable>> {
     list
 }
 
-fn simple_light() -> Vec<Arc<Hitable>> {
+fn simple_light() -> Vec<Arc<dyn Hitable>> {
     let perltext = Arc::new(NoiseTexture::new(4.0));
-    let mut list: Vec<Arc<Hitable>> = Vec::new();
+    let mut list: Vec<Arc<dyn Hitable>> = Vec::new();
 
     list.push(Arc::new(Sphere::new(
         Vec3::new(0.0, -1000.0, 0.0),
@@ -179,7 +172,7 @@ fn simple_light() -> Vec<Arc<Hitable>> {
     list
 }
 
-fn two_perlin_spheres() -> Vec<Arc<Hitable>> {
+fn two_perlin_spheres() -> Vec<Arc<dyn Hitable>> {
     let perltext = Arc::new(NoiseTexture::new(4.0));
     let mut list = Vec::new();
 
@@ -187,17 +180,17 @@ fn two_perlin_spheres() -> Vec<Arc<Hitable>> {
         Vec3::new(0.0, -1000.0, 0.0),
         1000.0,
         Arc::new(Lambertian::new(perltext.clone())),
-    )) as Arc<Hitable>);
+    )) as Arc<dyn Hitable>);
     list.push(Arc::new(Sphere::new(
         Vec3::new(0.0, 2.0, 0.0),
         2.0,
         Arc::new(Lambertian::new(perltext.clone())),
-    )) as Arc<Hitable>);
+    )) as Arc<dyn Hitable>);
 
     list
 }
 
-fn random_scene() -> Vec<Arc<Hitable>> {
+fn random_scene() -> Vec<Arc<dyn Hitable>> {
     let mut rng = rand::thread_rng();
     let n = 500;
     let mut list = Vec::with_capacity(n);
@@ -208,31 +201,31 @@ fn random_scene() -> Vec<Arc<Hitable>> {
             Arc::new(ConstantTexture::new(Vec3::new(0.2, 0.3, 0.1))),
             Arc::new(ConstantTexture::new(Vec3::new(0.9, 0.9, 0.9))),
         )))),
-    )) as Arc<Hitable>);
+    )) as Arc<dyn Hitable>);
 
     for a in -11..11 {
         for b in -11..11 {
-            let choose_mat = rng.next_f32();
+            let choose_mat = rng.gen::<f32>();
             let center = Vec3::new(
-                a as f32 + 0.9 * rng.next_f32(),
+                a as f32 + 0.9 * rng.gen::<f32>(),
                 0.2,
-                b as f32 + 0.9 * rng.next_f32(),
+                b as f32 + 0.9 * rng.gen::<f32>(),
             );
             if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
                 if choose_mat < 0.8 {
                     // diffuse
                     list.push(Arc::new(MovingSphere::new(
                         center,
-                        center + Vec3::new(0.0, 0.5 * rng.next_f32(), 0.0),
+                        center + Vec3::new(0.0, 0.5 * rng.gen::<f32>(), 0.0),
                         0.0,
                         1.0,
                         0.2,
                         Arc::new(Lambertian::constant(Vec3::new(
-                            rng.next_f32() * rng.next_f32(),
-                            rng.next_f32() * rng.next_f32(),
-                            rng.next_f32() * rng.next_f32(),
+                            rng.gen::<f32>() * rng.gen::<f32>(),
+                            rng.gen::<f32>() * rng.gen::<f32>(),
+                            rng.gen::<f32>() * rng.gen::<f32>(),
                         ))),
-                    )) as Arc<Hitable>)
+                    )) as Arc<dyn Hitable>)
                 } else if choose_mat < 0.95 {
                     // metal
                     list.push(Arc::new(Sphere::new(
@@ -240,18 +233,18 @@ fn random_scene() -> Vec<Arc<Hitable>> {
                         0.2,
                         Arc::new(Metal::new(
                             Vec3::new(
-                                0.5 * (1.0 + rng.next_f32()),
-                                0.5 * (1.0 + rng.next_f32()),
-                                0.5 * (1.0 + rng.next_f32()),
+                                0.5 * (1.0 + rng.gen::<f32>()),
+                                0.5 * (1.0 + rng.gen::<f32>()),
+                                0.5 * (1.0 + rng.gen::<f32>()),
                             ),
-                            0.5 * rng.next_f32(),
+                            0.5 * rng.gen::<f32>(),
                         )),
-                    )) as Arc<Hitable>);
+                    )) as Arc<dyn Hitable>);
                 } else {
                     // dielectric
                     list.push(
                         Arc::new(Sphere::new(center, 0.2, Arc::new(Dielectric::new(1.5))))
-                            as Arc<Hitable>,
+                            as Arc<dyn Hitable>,
                     );
                 }
             }
@@ -261,18 +254,18 @@ fn random_scene() -> Vec<Arc<Hitable>> {
     list.push(Arc::new(Sphere::new(
         Vec3::new(0.0, 1.0, 0.0),
         1.0,
-        Arc::new(Dielectric::new(1.5)) as Arc<Material>,
-    )) as Arc<Hitable>);
+        Arc::new(Dielectric::new(1.5)) as Arc<dyn Material>,
+    )) as Arc<dyn Hitable>);
     list.push(Arc::new(Sphere::new(
         Vec3::new(-4.0, 1.0, 0.0),
         1.0,
-        Arc::new(Lambertian::constant(Vec3::new(0.4, 0.3, 0.1))) as Arc<Material>,
-    )) as Arc<Hitable>);
+        Arc::new(Lambertian::constant(Vec3::new(0.4, 0.3, 0.1))) as Arc<dyn Material>,
+    )) as Arc<dyn Hitable>);
     list.push(Arc::new(Sphere::new(
         Vec3::new(4.0, 1.0, 0.0),
         1.0,
-        Arc::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.0)) as Arc<Material>,
-    )) as Arc<Hitable>);
+        Arc::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.0)) as Arc<dyn Material>,
+    )) as Arc<dyn Hitable>);
 
     list
 }
@@ -314,8 +307,8 @@ fn main() {
         for i in 0..nx {
             let mut col = Vec3::default();
             for _s in 0..ns {
-                let u = (i as f32 + rng.next_f32()) / nx as f32;
-                let v = (j as f32 + rng.next_f32()) / ny as f32;
+                let u = (i as f32 + rng.gen::<f32>()) / nx as f32;
+                let v = (j as f32 + rng.gen::<f32>()) / ny as f32;
                 let ray = camera.get_ray(u, v);
                 col += color(&ray, &bvh, 0);
             }

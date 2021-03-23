@@ -3,11 +3,11 @@ use std::sync::Arc;
 
 use rand::{self, Rng};
 
-use hitable::HitRecord;
-use random_in_unit_sphere;
-use ray::Ray;
-use texture::{ConstantTexture, Texture};
-use vec::{dot, unit_vector, Vec3};
+use crate::hitable::HitRecord;
+use crate::random_in_unit_sphere;
+use crate::ray::Ray;
+use crate::texture::{ConstantTexture, Texture};
+use crate::vec::{dot, unit_vector, Vec3};
 
 pub trait Material: Debug {
     fn scatter(
@@ -18,7 +18,7 @@ pub trait Material: Debug {
         scattered: &mut Ray,
     ) -> bool;
 
-    fn emitted(&self, u: f32, v: f32, p: &Vec3) -> Vec3 {
+    fn emitted(&self, _u: f32, _v: f32, _p: &Vec3) -> Vec3 {
         Vec3::default()
     }
 }
@@ -27,11 +27,11 @@ pub trait Material: Debug {
 /// the viewing direction).
 #[derive(Debug, Clone)]
 pub struct Lambertian {
-    albedo: Arc<Texture>,
+    albedo: Arc<dyn Texture>,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Arc<Texture>) -> Lambertian {
+    pub fn new(albedo: Arc<dyn Texture>) -> Lambertian {
         Lambertian { albedo }
     }
 
@@ -138,7 +138,7 @@ impl Material for Dielectric {
             1.0
         };
 
-        if rand::thread_rng().next_f32() < reflect_prob {
+        if rand::thread_rng().gen::<f32>() < reflect_prob {
             *scattered = Ray::with_time(&rec.p, &reflected, r_in.time());
         } else {
             *scattered = Ray::with_time(&rec.p, &refracted, r_in.time());
@@ -150,11 +150,11 @@ impl Material for Dielectric {
 
 #[derive(Debug)]
 pub struct DiffuseLight {
-    emit: Arc<Texture>,
+    emit: Arc<dyn Texture>,
 }
 
 impl DiffuseLight {
-    pub fn new(emit: Arc<Texture>) -> DiffuseLight {
+    pub fn new(emit: Arc<dyn Texture>) -> DiffuseLight {
         DiffuseLight { emit }
     }
 }

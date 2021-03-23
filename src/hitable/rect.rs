@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
-use aabb::Aabb;
-use hitable::{HitRecord, Hitable};
-use material::Material;
-use ray::Ray;
-use Vec3;
+use crate::aabb::Aabb;
+use crate::hitable::{HitRecord, Hitable};
+use crate::material::Material;
+use crate::ray::Ray;
+use crate::Vec3;
 
 #[derive(Debug)]
 pub struct XYRect {
@@ -13,11 +13,11 @@ pub struct XYRect {
     y0: f32,
     y1: f32,
     k: f32,
-    mp: Arc<Material>,
+    mp: Arc<dyn Material>,
 }
 
 impl XYRect {
-    pub fn new(x0: f32, x1: f32, y0: f32, y1: f32, k: f32, mat: Arc<Material>) -> XYRect {
+    pub fn new(x0: f32, x1: f32, y0: f32, y1: f32, k: f32, mat: Arc<dyn Material>) -> XYRect {
         XYRect {
             x0,
             x1,
@@ -67,11 +67,11 @@ pub struct XZRect {
     z0: f32,
     z1: f32,
     k: f32,
-    mp: Arc<Material>,
+    mp: Arc<dyn Material>,
 }
 
 impl XZRect {
-    pub fn new(x0: f32, x1: f32, z0: f32, z1: f32, k: f32, mat: Arc<Material>) -> XZRect {
+    pub fn new(x0: f32, x1: f32, z0: f32, z1: f32, k: f32, mat: Arc<dyn Material>) -> XZRect {
         XZRect {
             x0,
             x1,
@@ -121,11 +121,11 @@ pub struct YZRect {
     z0: f32,
     z1: f32,
     k: f32,
-    mp: Arc<Material>,
+    mp: Arc<dyn Material>,
 }
 
 impl YZRect {
-    pub fn new(y0: f32, y1: f32, z0: f32, z1: f32, k: f32, mat: Arc<Material>) -> YZRect {
+    pub fn new(y0: f32, y1: f32, z0: f32, z1: f32, k: f32, mat: Arc<dyn Material>) -> YZRect {
         YZRect {
             y0,
             y1,

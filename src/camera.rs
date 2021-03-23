@@ -2,8 +2,8 @@ use std::f32;
 
 use rand::{self, Rng};
 
-use ray::Ray;
-use vec::{cross, dot, unit_vector, Vec3};
+use crate::ray::Ray;
+use crate::vec::{cross, dot, unit_vector, Vec3};
 
 pub struct Camera {
     origin: Vec3,
@@ -63,7 +63,7 @@ impl Camera {
             &(self.origin + offset),
             &(self.lower_left_corner + s * self.horizontal + t * self.vertical - self.origin
                 - offset),
-            self.time0 + rand::thread_rng().next_f32() * (self.time1 - self.time0),
+            self.time0 + rand::thread_rng().gen::<f32>() * (self.time1 - self.time0),
         )
     }
 }
@@ -71,7 +71,7 @@ impl Camera {
 fn random_in_unit_disk() -> Vec3 {
     let mut rng = rand::thread_rng();
     loop {
-        let p = 2.0 * Vec3::new(rng.next_f32(), rng.next_f32(), 0.0) - Vec3::new(1.0, 1.0, 0.0);
+        let p = 2.0 * Vec3::new(rng.gen::<f32>(), rng.gen::<f32>(), 0.0) - Vec3::new(1.0, 1.0, 0.0);
         if dot(&p, &p) < 1.0 {
             return p;
         }

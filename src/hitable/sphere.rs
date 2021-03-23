@@ -1,20 +1,20 @@
 use std::f32;
 use std::sync::Arc;
 
-use aabb::{surrounding_box, Aabb};
-use hitable::{HitRecord, Hitable};
-use material::Material;
-use ray::Ray;
-use vec::{dot, Vec3};
+use crate::aabb::{surrounding_box, Aabb};
+use crate::hitable::{HitRecord, Hitable};
+use crate::material::Material;
+use crate::ray::Ray;
+use crate::vec::{dot, Vec3};
 
 pub struct Sphere {
     center: Vec3,
     radius: f32,
-    material: Arc<Material>,
+    material: Arc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f32, material: Arc<Material>) -> Sphere {
+    pub fn new(center: Vec3, radius: f32, material: Arc<dyn Material>) -> Sphere {
         Sphere {
             center,
             radius,
@@ -59,7 +59,7 @@ impl Hitable for Sphere {
         false
     }
 
-    fn bounding_box(&self, t0: f32, t1: f32, aabb: &mut Aabb) -> bool {
+    fn bounding_box(&self, _t0: f32, _t1: f32, aabb: &mut Aabb) -> bool {
         *aabb = Aabb::new(
             &(self.center - Vec3::new(self.radius, self.radius, self.radius)),
             &(self.center + Vec3::new(self.radius, self.radius, self.radius)),
@@ -75,7 +75,7 @@ pub struct MovingSphere {
     time0: f32,
     time1: f32,
     radius: f32,
-    material: Arc<Material>,
+    material: Arc<dyn Material>,
 }
 
 impl MovingSphere {
@@ -85,7 +85,7 @@ impl MovingSphere {
         time0: f32,
         time1: f32,
         radius: f32,
-        material: Arc<Material>,
+        material: Arc<dyn Material>,
     ) -> MovingSphere {
         MovingSphere {
             center0,
@@ -133,7 +133,7 @@ impl Hitable for MovingSphere {
         false
     }
 
-    fn bounding_box(&self, t0: f32, t1: f32, aabb: &mut Aabb) -> bool {
+    fn bounding_box(&self, _t0: f32, _t1: f32, aabb: &mut Aabb) -> bool {
         let aabb0 = Aabb::new(
             &(self.center0 - Vec3::new(self.radius, self.radius, self.radius)),
             &(self.center0 + Vec3::new(self.radius, self.radius, self.radius)),

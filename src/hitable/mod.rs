@@ -8,17 +8,17 @@ pub use self::boxx::*;
 pub use self::rect::*;
 pub use self::sphere::*;
 
-use aabb::{surrounding_box, Aabb};
-use material::Material;
-use ray::Ray;
-use vec::Vec3;
+use crate::aabb::{surrounding_box, Aabb};
+use crate::material::Material;
+use crate::ray::Ray;
+use crate::vec::Vec3;
 
 #[derive(Debug, Clone, Default)]
 pub struct HitRecord {
     pub t: f32,
     pub p: Vec3,
     pub normal: Vec3,
-    pub mat: Option<Arc<Material>>,
+    pub mat: Option<Arc<dyn Material>>,
     pub u: f32,
     pub v: f32,
 }
@@ -28,7 +28,7 @@ pub trait Hitable {
     fn bounding_box(&self, t0: f32, t1: f32, aabb: &mut Aabb) -> bool;
 }
 
-impl<'a> Hitable for &'a [Arc<Hitable>] {
+impl<'a> Hitable for &'a [Arc<dyn Hitable>] {
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
         let mut temp_hit = HitRecord::default();
         let mut hit_anything = false;
@@ -68,11 +68,11 @@ impl<'a> Hitable for &'a [Arc<Hitable>] {
 }
 
 pub struct FlipNormals {
-    ptr: Arc<Hitable>,
+    ptr: Arc<dyn Hitable>,
 }
 
 impl FlipNormals {
-    pub fn new(ptr: Arc<Hitable>) -> FlipNormals {
+    pub fn new(ptr: Arc<dyn Hitable>) -> FlipNormals {
         FlipNormals { ptr }
     }
 }

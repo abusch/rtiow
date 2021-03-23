@@ -1,22 +1,22 @@
 use std::cmp::Ordering;
 use std::sync::Arc;
 
-use rand::{self, Rng};
+use rand::Rng;
 
-use aabb::{surrounding_box, Aabb};
-use hitable::{HitRecord, Hitable};
-use ray::Ray;
+use crate::aabb::{surrounding_box, Aabb};
+use crate::hitable::{HitRecord, Hitable};
+use crate::ray::Ray;
 
 pub struct BvhNode {
-    left: Arc<Hitable>,
-    right: Arc<Hitable>,
+    left: Arc<dyn Hitable>,
+    right: Arc<dyn Hitable>,
     bbox: Aabb,
 }
 
 impl BvhNode {
-    pub fn new(l: &mut [Arc<Hitable>], time0: f32, time1: f32) -> BvhNode {
+    pub fn new(l: &mut [Arc<dyn Hitable>], time0: f32, time1: f32) -> BvhNode {
         let mut rng = rand::thread_rng();
-        let axis = (rng.next_f32() * 3.0) as usize;
+        let axis = (rng.gen::<f32>() * 3.0) as usize;
         match axis {
             0 => l.sort_by(box_x_compare),
             1 => l.sort_by(box_y_compare),
@@ -31,8 +31,8 @@ impl BvhNode {
             let len = l.len();
             let (left_list, right_list) = l.split_at_mut(len / 2);
             (
-                Arc::new(BvhNode::new(left_list, time0, time1)) as Arc<Hitable>,
-                Arc::new(BvhNode::new(right_list, time0, time1)) as Arc<Hitable>,
+                Arc::new(BvhNode::new(left_list, time0, time1)) as Arc<dyn Hitable>,
+                Arc::new(BvhNode::new(right_list, time0, time1)) as Arc<dyn Hitable>,
             )
         };
 
@@ -79,13 +79,13 @@ impl Hitable for BvhNode {
         }
     }
 
-    fn bounding_box(&self, t0: f32, t1: f32, aabb: &mut Aabb) -> bool {
+    fn bounding_box(&self, _t0: f32, _t1: f32, aabb: &mut Aabb) -> bool {
         aabb.clone_from(&self.bbox);
         true
     }
 }
 
-fn box_x_compare(a: &Arc<Hitable>, b: &Arc<Hitable>) -> Ordering {
+fn box_x_compare(a: &Arc<dyn Hitable>, b: &Arc<dyn Hitable>) -> Ordering {
     let mut box_left = Aabb::default();
     let mut box_right = Aabb::default();
 
@@ -100,7 +100,7 @@ fn box_x_compare(a: &Arc<Hitable>, b: &Arc<Hitable>) -> Ordering {
         .expect("Bounding boxes contained NaN!")
 }
 
-fn box_y_compare(a: &Arc<Hitable>, b: &Arc<Hitable>) -> Ordering {
+fn box_y_compare(a: &Arc<dyn Hitable>, b: &Arc<dyn Hitable>) -> Ordering {
     let mut box_left = Aabb::default();
     let mut box_right = Aabb::default();
 
@@ -115,7 +115,7 @@ fn box_y_compare(a: &Arc<Hitable>, b: &Arc<Hitable>) -> Ordering {
         .expect("Bounding boxes contained NaN!")
 }
 
-fn box_z_compare(a: &Arc<Hitable>, b: &Arc<Hitable>) -> Ordering {
+fn box_z_compare(a: &Arc<dyn Hitable>, b: &Arc<dyn Hitable>) -> Ordering {
     let mut box_left = Aabb::default();
     let mut box_right = Aabb::default();
 

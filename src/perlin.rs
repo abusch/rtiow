@@ -1,8 +1,9 @@
 use std::f32;
 
+use lazy_static::lazy_static;
 use rand::{self, Rng};
 
-use vec::{self, Vec3};
+use crate::vec::{self, Vec3};
 
 lazy_static! {
     static ref RANVEC: [Vec3; 256] = generate();
@@ -65,7 +66,7 @@ fn perlin_interp(c: &[[[Vec3; 2]; 2]; 2], u: f32, v: f32, w: f32) -> f32 {
 fn permute(p: &mut [usize], n: usize) {
     let mut rng = rand::thread_rng();
     for i in (1..n).rev() {
-        let target = (rng.next_f32() * (i + 1) as f32) as usize;
+        let target = (rng.gen::<f32>() * (i + 1) as f32) as usize;
         p.swap(i, target);
     }
 }
@@ -76,9 +77,9 @@ fn generate() -> [Vec3; 256] {
     let mut p = [Vec3::default(); 256];
     for i in 0..256 {
         p[i] = vec::unit_vector(&Vec3::new(
-            -1.0 + 2.0 * rng.next_f32(),
-            -1.0 + 2.0 * rng.next_f32(),
-            -1.0 + 2.0 * rng.next_f32(),
+            -1.0 + 2.0 * rng.gen::<f32>(),
+            -1.0 + 2.0 * rng.gen::<f32>(),
+            -1.0 + 2.0 * rng.gen::<f32>(),
         ));
     }
     p
