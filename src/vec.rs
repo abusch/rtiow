@@ -151,7 +151,6 @@ impl<'a> Mul<f32> for &'a Vec3 {
     }
 }
 
-#[cfg_attr(feature = "cargo-clippy", allow(suspicious_arithmetic_impl))]
 impl Div<f32> for Vec3 {
     type Output = Vec3;
 
@@ -162,7 +161,6 @@ impl Div<f32> for Vec3 {
     }
 }
 
-#[cfg_attr(feature = "cargo-clippy", allow(suspicious_arithmetic_impl))]
 impl<'a> Div<f32> for &'a Vec3 {
     type Output = Vec3;
 

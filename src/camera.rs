@@ -39,8 +39,10 @@ impl Camera {
         let v = cross(&w, &u);
 
         // let lower_left_corner = Vec3::new(-half_width, -half_height, -1.);
-        let lower_left_corner = origin - half_width * focus_distance * u
-            - half_height * focus_distance * v - focus_distance * w;
+        let lower_left_corner = origin
+            - half_width * focus_distance * u
+            - half_height * focus_distance * v
+            - focus_distance * w;
         let horizontal = 2.0 * half_width * focus_distance * u;
         let vertical = 2.0 * half_height * focus_distance * v;
         Camera {
@@ -61,7 +63,8 @@ impl Camera {
         let offset = &self.u * rd.x() + &self.v * rd.y();
         Ray::with_time(
             &(self.origin + offset),
-            &(self.lower_left_corner + s * self.horizontal + t * self.vertical - self.origin
+            &(self.lower_left_corner + s * self.horizontal + t * self.vertical
+                - self.origin
                 - offset),
             self.time0 + rand::thread_rng().gen::<f32>() * (self.time1 - self.time0),
         )

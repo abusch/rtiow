@@ -14,7 +14,7 @@ lazy_static! {
 
 pub fn turb(p: &Vec3, depth: u32) -> f32 {
     let mut accum = 0.0;
-    let mut temp_p = p.clone();
+    let mut temp_p = *p;
     let mut weight = 1.0;
 
     for _ in 0..depth {
@@ -44,6 +44,7 @@ pub fn noise(p: &Vec3) -> f32 {
     perlin_interp(&c, u, v, w)
 }
 
+#[allow(clippy::needless_range_loop)]
 fn perlin_interp(c: &[[[Vec3; 2]; 2]; 2], u: f32, v: f32, w: f32) -> f32 {
     let uu = u * u * (3.0 - 2.0 * u);
     let vv = v * v * (3.0 - 2.0 * v);
@@ -71,6 +72,7 @@ fn permute(p: &mut [usize], n: usize) {
     }
 }
 
+#[allow(clippy::needless_range_loop)]
 fn generate() -> [Vec3; 256] {
     let mut rng = rand::thread_rng();
 
@@ -85,11 +87,11 @@ fn generate() -> [Vec3; 256] {
     p
 }
 
+#[allow(clippy::needless_range_loop)]
 fn generate_perm() -> [usize; 256] {
     let mut p = [0; 256];
-    for i in 0..256 {
-        p[i] = i;
-    }
+    p.iter_mut().enumerate().for_each(|(i, v)| *v = i);
+
     permute(&mut p[..], 256);
     p
 }

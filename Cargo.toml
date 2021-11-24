@@ -2,11 +2,11 @@
 name = "rtiow"
 version = "0.1.0"
 authors = ["Antoine Busch <antoine.busch@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-lazy_static = "*"
-rand = "*"
+lazy_static = "1.4"
+rand = "0.8"
 log = "0.4"
-env_logger="*"
-image="*"
+env_logger="0.9"
+image="0.23"

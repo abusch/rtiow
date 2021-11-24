@@ -1,7 +1,12 @@
 //! This is my implementation of the raytracer described in "Ray Tracing In One Weekend" by Peter
 //! Shirley.
 #![deny(missing_docs)]
-#![allow(non_snake_case, dead_code)]
+#![allow(
+    non_snake_case,
+    dead_code,
+    clippy::many_single_char_names,
+    clippy::too_many_arguments
+)]
 
 mod aabb;
 mod bvh;
@@ -35,8 +40,10 @@ fn color(r: &Ray, world: &dyn Hitable, depth: u32) -> Vec3 {
         let mut scattered = Ray::default();
         let mut attenuation = Vec3::default();
         let emitted = rec.mat.as_ref().unwrap().emitted(rec.u, rec.v, &rec.p);
-        if depth < 50 && rec.mat.is_some()
-            && rec.mat
+        if depth < 50
+            && rec.mat.is_some()
+            && rec
+                .mat
                 .as_ref()
                 .cloned()
                 .unwrap()
@@ -139,53 +146,53 @@ fn cornell_box() -> Vec<Arc<dyn Hitable>> {
 
 fn simple_light() -> Vec<Arc<dyn Hitable>> {
     let perltext = Arc::new(NoiseTexture::new(4.0));
-    let mut list: Vec<Arc<dyn Hitable>> = Vec::new();
-
-    list.push(Arc::new(Sphere::new(
-        Vec3::new(0.0, -1000.0, 0.0),
-        1000.0,
-        Arc::new(Lambertian::new(perltext.clone())),
-    )));
-    list.push(Arc::new(Sphere::new(
-        Vec3::new(0.0, 2.0, 0.0),
-        2.0,
-        Arc::new(Lambertian::new(perltext.clone())),
-    )));
-    list.push(Arc::new(Sphere::new(
-        Vec3::new(0.0, 7.0, 0.0),
-        2.0,
-        Arc::new(DiffuseLight::new(Arc::new(ConstantTexture::new(
-            Vec3::new(4.0, 4.0, 4.0),
-        )))),
-    )));
-    list.push(Arc::new(XYRect::new(
-        3.0,
-        5.0,
-        1.0,
-        3.0,
-        -2.0,
-        Arc::new(DiffuseLight::new(Arc::new(ConstantTexture::new(
-            Vec3::new(4.0, 4.0, 4.0),
-        )))),
-    )));
+    let list: Vec<Arc<dyn Hitable>> = vec![
+        Arc::new(Sphere::new(
+            Vec3::new(0.0, -1000.0, 0.0),
+            1000.0,
+            Arc::new(Lambertian::new(perltext.clone())),
+        )),
+        Arc::new(Sphere::new(
+            Vec3::new(0.0, 2.0, 0.0),
+            2.0,
+            Arc::new(Lambertian::new(perltext)),
+        )),
+        Arc::new(Sphere::new(
+            Vec3::new(0.0, 7.0, 0.0),
+            2.0,
+            Arc::new(DiffuseLight::new(Arc::new(ConstantTexture::new(
+                Vec3::new(4.0, 4.0, 4.0),
+            )))),
+        )),
+        Arc::new(XYRect::new(
+            3.0,
+            5.0,
+            1.0,
+            3.0,
+            -2.0,
+            Arc::new(DiffuseLight::new(Arc::new(ConstantTexture::new(
+                Vec3::new(4.0, 4.0, 4.0),
+            )))),
+        )),
+    ];
 
     list
 }
 
 fn two_perlin_spheres() -> Vec<Arc<dyn Hitable>> {
     let perltext = Arc::new(NoiseTexture::new(4.0));
-    let mut list = Vec::new();
-
-    list.push(Arc::new(Sphere::new(
-        Vec3::new(0.0, -1000.0, 0.0),
-        1000.0,
-        Arc::new(Lambertian::new(perltext.clone())),
-    )) as Arc<dyn Hitable>);
-    list.push(Arc::new(Sphere::new(
-        Vec3::new(0.0, 2.0, 0.0),
-        2.0,
-        Arc::new(Lambertian::new(perltext.clone())),
-    )) as Arc<dyn Hitable>);
+    let list = vec![
+        Arc::new(Sphere::new(
+            Vec3::new(0.0, -1000.0, 0.0),
+            1000.0,
+            Arc::new(Lambertian::new(perltext.clone())),
+        )) as Arc<dyn Hitable>,
+        Arc::new(Sphere::new(
+            Vec3::new(0.0, 2.0, 0.0),
+            2.0,
+            Arc::new(Lambertian::new(perltext)),
+        )) as Arc<dyn Hitable>,
+    ];
 
     list
 }
